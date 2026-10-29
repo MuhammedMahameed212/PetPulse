@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Django tests with Coverage Metrics
         run: |
-          coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core --v=2
+          coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core --verbosity=2
           coverage report --rcfile=.coveragerc -m
           coverage xml --rcfile=.coveragerc -o coverage.xml
 
