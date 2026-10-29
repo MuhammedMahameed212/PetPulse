@@ -18,7 +18,7 @@ DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
     if host.strip()
 ]
 
@@ -66,13 +66,44 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "petpulse_core.wsgi.application"
 
-# Database (SQLite for local development)
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Database configuration:
+# Uses SQLite (backend/db.sqlite3) by default for local dev & CI.
+# Can be switched to MS SQL Server (DB_ENGINE=mssql) or PostgreSQL (DB_ENGINE=postgres) via .env.
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").lower()
+
+if DB_ENGINE == "mssql":
+    DATABASES = {
+        "default": {
+            "ENGINE": "mssql",
+            "NAME": os.getenv("DB_NAME", "PetPulseDB"),
+            "USER": os.getenv("DB_USER", "sa"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "1433"),
+            "OPTIONS": {
+                "driver": os.getenv("DB_ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
+                "extra_params": "TrustServerCertificate=yes;",
+            },
+        }
     }
-}
+elif DB_ENGINE == "postgres":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "petpulse"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
