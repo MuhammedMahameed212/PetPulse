@@ -1,47 +1,50 @@
 import React, { useEffect, useState } from "react";
+import { apiFetch, clearStoredAuth, getStoredToken } from "./api";
+import AuthPage from "./components/AuthPage";
+import OwnerDashboard from "./components/OwnerDashboard";
+import ThreeLayerShell from "./components/ThreeLayerShell";
+import VetDashboard from "./components/VetDashboard";
 
 export default function App() {
-  const [backendStatus, setBackendStatus] = useState("Checking connection to Django...");
-  const [metrics, setMetrics] = useState(null);
+  const [user, setUser] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    fetch("/api/health/")
-      .then((res) => res.json())
-      .then((data) => setBackendStatus(data.message))
-      .catch(() =>
-        setBackendStatus("Django backend not reachable yet (run `manage.py runserver`).")
-      );
+    const token = getStoredToken();
+    if (!token) {
+      setCheckingAuth(false);
+      return;
+    }
 
-    fetch("/api/metrics/")
-      .then((res) => res.json())
-      .then((data) => setMetrics(data))
-      .catch(() => setMetrics(null));
+    // US-15 AC-6: Verify token with protected /api/auth/me/ endpoint
+    apiFetch("/auth/me/")
+      .then((userData) => setUser(userData))
+      .catch(() => {
+        clearStoredAuth();
+        setUser(null);
+      })
+      .finally(() => setCheckingAuth(false));
   }, []);
 
-  return (
-    <div className="welcome-shell">
-      <div className="welcome-card">
-        <h1>🐾 PetPulse</h1>
-        <p className="subtitle">
-          Smart Pet Medical Record &amp; Veterinary Collaboration Platform
-        </p>
-        <div className="status-box">
-          <div>
-            <strong>Backend Status:</strong> {backendStatus}
-          </div>
-          {metrics && (
-            <div style={{ marginTop: "0.4rem", fontSize: "0.84rem" }}>
-              <strong>Database:</strong> {metrics.database?.vendor} (Connected:{" "}
-              {metrics.database?.connected ? "Yes ✅" : "No ❌"} | Applied Migrations:{" "}
-              {metrics.database?.applied_migrations})
-            </div>
-          )}
+  if (checkingAuth) {
+    return (
+      <ThreeLayerShell variant="owner">
+        <div className="layer-2-glass-stage" style={{ padding: "2rem", textAlign: "center" }}>
+          <div className="layer-3-card">Verifying session...</div>
         </div>
-        <p className="next-step">
-          Step 0 (Base Skeleton, Database &amp; CI/CD) is ready. Next up:{" "}
-          <strong>Milestone 1 — Authentication &amp; Role Routing</strong>.
-        </p>
-      </div>
-    </div>
-  );
+      </ThreeLayerShell>
+    );
+  }
+
+  // US-15 AC-6: Block access to protected dashboards when unauthenticated
+  if (!user) {
+    return <AuthPage onAuthSuccess={(loggedInUser) => setUser(loggedInUser)} />;
+  }
+
+  // US-15 AC-5: Route to the interface matching the user's role
+  if (user.dashboard_route === "/vet-dashboard" || user.role === "VETERINARIAN") {
+    return <VetDashboard user={user} />;
+  }
+
+  return <OwnerDashboard user={user} />;
 }

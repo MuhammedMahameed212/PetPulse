@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="38%" stop-color="#ccfbf1" />
+      <stop offset="72%" stop-color="#fef3c7" />
+      <stop offset="100%" stop-color="#ffedd5" />
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="78%" cy="22%" r="45%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.42" />
+      <stop offset="50%" stop-color="#fde68a" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mintOrb" cx="18%" cy="26%" r="42%">
+      <stop offset="0%" stop-color="#14b8a6" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#0f766e" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="hillBack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.85" />
+    </linearGradient>
+    <linearGradient id="hillMid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d9488" stop-opacity="0.78" />
+      <stop offset="100%" stop-color="#0f766e" stop-opacity="0.92" />
+    </linearGradient>
+    <linearGradient id="hillFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#115e59" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Warm Sunlit Sky & Atmospheric Glows -->
+  <rect width="1920" height="1080" fill="url(#skyGrad)" />
+  <rect width="1920" height="1080" fill="url(#sunGlow)" />
+  <rect width="1920" height="1080" fill="url(#mintOrb)" />
+
+  <!-- Soft 3D Sun & Bokeh Depth Spheres -->
+  <circle cx="1480" cy="230" r="170" fill="#fed7aa" fill-opacity="0.55" />
+  <circle cx="1480" cy="230" r="95" fill="#ffffff" fill-opacity="0.65" />
+  <circle cx="340" cy="240" r="140" fill="#ffffff" fill-opacity="0.45" />
+  <circle cx="960" cy="180" r="85" fill="#ffffff" fill-opacity="0.4" />
+
+  <!-- Distant Rolling Mint Hills -->
+  <path d="M0,670 C360,540 720,740 1140,610 C1480,500 1720,620 1920,570 L1920,1080 L0,1080 Z" fill="url(#hillBack)" />
+
+  <!-- Midground Rolling Teal Hills -->
+  <path d="M0,775 C420,665 820,845 1280,715 C1580,630 1780,725 1920,695 L1920,1080 L0,1080 Z" fill="url(#hillMid)" />
+
+  <!-- Foreground Deep Emerald Park Silhouette -->
+  <path d="M0,885 C480,805 940,945 1440,845 C1690,795 1830,855 1920,835 L1920,1080 L0,1080 Z" fill="url(#hillFront)" />
+</svg>
