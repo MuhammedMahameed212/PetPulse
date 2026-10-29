@@ -3,6 +3,7 @@ Django settings for PetPulse project (Step 0 — Base Skeleton).
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -32,8 +33,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party apps
     "rest_framework",
+    "rest_framework_simplejwt",
     "corsheaders",
-    # PetPulse apps will be added here step-by-step starting in Milestone 1
+    # PetPulse domain apps
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -105,12 +108,33 @@ else:
         }
     }
 
+# Custom User Model (FR-1 / US-15: Pet Owner vs. Veterinarian / Clinic Staff)
+AUTH_USER_MODEL = "accounts.User"
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# Django REST Framework & JWT Configuration
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 # CORS Settings so React (http://localhost:5173) can talk to Django (http://127.0.0.1:8000)
 CORS_ALLOWED_ORIGINS = [

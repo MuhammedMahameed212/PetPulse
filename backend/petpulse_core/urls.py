@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.db import connection
 from django.db.migrations.recorder import MigrationRecorder
 from django.http import JsonResponse
-from django.urls import path
+from django.urls import include, path
 from django.utils import timezone
 
 
@@ -49,4 +49,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health_check, name="api-health"),
     path("api/metrics/", system_metrics, name="api-metrics"),
+    path("api/auth/", include("accounts.urls")),
 ]

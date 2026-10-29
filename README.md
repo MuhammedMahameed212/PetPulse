@@ -53,7 +53,8 @@ python -m venv .venv
 
 # 4. Run the Django server (http://127.0.0.1:8000)
 .venv\Scripts\python backend/manage.py runserver
-```
+``
+.venv/bin/python backend/manage.py runserver
 
 ### 3. Set Up the Frontend (React + Vite)
 
