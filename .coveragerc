@@ -1,0 +1,14 @@
+[run]
+source = backend
+omit =
+    */migrations/*
+    */__init__.py
+    backend/manage.py
+    backend/petpulse_core/asgi.py
+    backend/petpulse_core/wsgi.py
+
+[report]
+show_missing = True
+skip_covered = False
+precision = 1
+
