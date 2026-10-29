@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+
+.welcome-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.welcome-card {
+  max-width: 520px;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+.welcome-card h1 {
+  margin: 0 0 0.5rem;
+  color: #2563eb;
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  color: #64748b;
+}
+
+.status-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.next-step {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
