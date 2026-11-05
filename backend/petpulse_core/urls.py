@@ -28,7 +28,8 @@ def system_metrics(request):
     try:
         connection.ensure_connection()
         db_connected = True
-        applied_migrations = MigrationRecorder.Migration.objects.count()
+        recorder = MigrationRecorder(connection)
+        applied_migrations = len(recorder.applied_migrations())
     except Exception:
         db_connected = False
 

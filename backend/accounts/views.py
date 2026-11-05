@@ -1,19 +1,18 @@
-from django.contrib.auth import authenticate, get_user_model, logout
+from django.contrib.auth import authenticate, logout
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import User
 from .serializers import ChangePasswordSerializer, RegisterSerializer, UserSerializer
 
-User = get_user_model()
 
-
-def get_tokens_for_user(user: User) -> dict:
+def get_tokens_for_user(user: User) -> dict[str, str]:
     refresh = RefreshToken.for_user(user)
     return {
         "refresh": str(refresh),
-        "access": str(refresh.access_token),
+        "access": str(getattr(refresh, "access_token", "")),
     }
 
 
@@ -68,7 +67,7 @@ class LoginView(APIView):
                 request, username=user_obj.username, password=password
             )
 
-        if not user:
+        if not isinstance(user, User):
             return Response(
                 {"detail": "Invalid login credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -122,7 +121,8 @@ class ChangePasswordView(APIView):
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        request.user.set_password(serializer.validated_data["new_password"])
+        validated = dict(serializer.validated_data)  # type: ignore[arg-type]
+        request.user.set_password(validated["new_password"])
         request.user.save()
         return Response(
             {"detail": "Password updated successfully."},

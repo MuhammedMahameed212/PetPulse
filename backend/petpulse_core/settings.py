@@ -179,6 +179,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+WHITENOISE_USE_FINDERS = True
 
 # WhiteNoise serves built Vite frontend assets (/assets/*, /bg-petpulse.svg) from frontend/dist
 if FRONTEND_DIST_DIR.exists():
