@@ -28,7 +28,7 @@ export default function App() {
 
   if (checkingAuth) {
     return (
-      <ThreeLayerShell variant="owner">
+      <ThreeLayerShell variant="dashboard">
         <div className="layer-2-glass-stage" style={{ padding: "2rem", textAlign: "center" }}>
           <div className="layer-3-card">Verifying session...</div>
         </div>
@@ -36,15 +36,15 @@ export default function App() {
     );
   }
 
-  // US-15 AC-6: Block access to protected dashboards when unauthenticated
+  // US-15 AC-6 & US-23 AC-6: Block access to protected dashboards when unauthenticated
   if (!user) {
     return <AuthPage onAuthSuccess={(loggedInUser) => setUser(loggedInUser)} />;
   }
 
   // US-15 AC-5: Route to the interface matching the user's role
   if (user.dashboard_route === "/vet-dashboard" || user.role === "VETERINARIAN") {
-    return <VetDashboard user={user} />;
+    return <VetDashboard user={user} onLogout={() => setUser(null)} />;
   }
 
-  return <OwnerDashboard user={user} />;
+  return <OwnerDashboard user={user} onLogout={() => setUser(null)} />;
 }

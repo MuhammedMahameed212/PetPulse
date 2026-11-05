@@ -2,9 +2,9 @@ import React from "react";
 
 /**
  * Global 3-Layer 3D Spatial Layout Wrapper for PetPulse.
- * - Layer 1 (Back / z-index: 0): Scenic background image + floating ambient 3D light orbs
+ * - Layer 1 (Back / z-index: 0): Bright scenic background image + ambient light orbs
  * - Layer 2 (Middle / z-index: 10): Frosted glassmorphism floating stage
- * - Layer 3 (Front / z-index: 20): Elevated 3D cards & tactile controls rendered inside children
+ * - Layer 3 (Front / z-index: 20): Crisp elevated white 3D cards rendered inside children
  */
 export default function ThreeLayerShell({ variant = "auth", children }) {
   return (

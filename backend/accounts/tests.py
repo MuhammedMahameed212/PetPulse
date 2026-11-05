@@ -71,6 +71,99 @@ class US15RegistrationAndLoginTests(TestCase):
         token = ok_res.data["tokens"]["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        me_res = self.client.get("/api/auth/me/")
-        self.assertEqual(me_res.status_code, 200)
+        auth_res = self.client.get("/api/auth/me/")
+        self.assertEqual(auth_res.status_code, 200)
+        self.assertEqual(auth_res.data["username"], "owner_user")
 
+    def test_us23_logout_endpoint_and_post_logout_protection(self):
+        """US-23 (AC5 & AC6): Authenticated user can log out, and unauthenticated access after logout is blocked."""
+        user = User.objects.create_user(
+            username="logout_user",
+            email="logout@example.com",
+            password="StrongPassword123!",
+        )
+        login_res = self.client.post(
+            "/api/auth/login/",
+            {"username": user.username, "password": "StrongPassword123!"},
+            format="json",
+        )
+        token = login_res.data["tokens"]["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        logout_res = self.client.post("/api/auth/logout/")
+        self.assertEqual(logout_res.status_code, 200)
+        self.assertEqual(logout_res.data["detail"], "Logged out successfully.")
+
+        # Clearing credentials simulates client clearing stored tokens on logout (AC6)
+        self.client.credentials()
+        blocked_res = self.client.get("/api/auth/me/")
+        self.assertEqual(blocked_res.status_code, 401)
+
+    def test_us23_change_password_validation_and_login_with_new_password(self):
+        """US-23 (AC1–AC4): User can change password, security & confirmation rules are enforced, and new password works on next login."""
+        user = User.objects.create_user(
+            username="pw_user",
+            email="pw@example.com",
+            password="InitialPassword123!",
+        )
+        login_res = self.client.post(
+            "/api/auth/login/",
+            {"username": user.username, "password": "InitialPassword123!"},
+            format="json",
+        )
+        token = login_res.data["tokens"]["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        # 1. Wrong current password -> 400
+        wrong_current = self.client.post(
+            "/api/auth/change-password/",
+            {
+                "current_password": "WrongOldPassword!",
+                "new_password": "UpdatedPassword456!",
+                "new_password_confirm": "UpdatedPassword456!",
+            },
+            format="json",
+        )
+        self.assertEqual(wrong_current.status_code, 400)
+        self.assertIn("current_password", wrong_current.data)
+
+        # 2. Weak new password -> 400 (AC3)
+        weak_pw = self.client.post(
+            "/api/auth/change-password/",
+            {
+                "current_password": "InitialPassword123!",
+                "new_password": "123",
+                "new_password_confirm": "123",
+            },
+            format="json",
+        )
+        self.assertEqual(weak_pw.status_code, 400)
+        self.assertIn("new_password", weak_pw.data)
+
+        # 3. Valid password change -> 200 (AC1, AC2)
+        ok_change = self.client.post(
+            "/api/auth/change-password/",
+            {
+                "current_password": "InitialPassword123!",
+                "new_password": "UpdatedPassword456!",
+                "new_password_confirm": "UpdatedPassword456!",
+            },
+            format="json",
+        )
+        self.assertEqual(ok_change.status_code, 200)
+
+        # 4. Old password no longer works, new password succeeds on next login (AC4)
+        self.client.credentials()
+        old_login = self.client.post(
+            "/api/auth/login/",
+            {"username": user.username, "password": "InitialPassword123!"},
+            format="json",
+        )
+        self.assertEqual(old_login.status_code, 401)
+
+        new_login = self.client.post(
+            "/api/auth/login/",
+            {"username": user.username, "password": "UpdatedPassword456!"},
+            format="json",
+        )
+        self.assertEqual(new_login.status_code, 200)

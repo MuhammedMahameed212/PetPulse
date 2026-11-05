@@ -1,58 +1,109 @@
-import React from "react";
+import React, { useState } from "react";
+import ChangePasswordCard from "./ChangePasswordCard";
 import ThreeLayerShell from "./ThreeLayerShell";
+import UserProfileMenu from "./UserProfileMenu";
 
-export default function VetDashboard({ user }) {
+export default function VetDashboard({ user, onLogout }) {
+  const [activeTab, setActiveTab] = useState("home"); // "home" | "settings"
+
   return (
-    <ThreeLayerShell variant="vet">
-      {/* LAYER 2: Frosted Glass Wide Clinical Portal Stage */}
-      <div className="layer-2-glass-stage vet-portal-stage">
-        {/* Left Clinical Sidebar (Dark Teal Glass) */}
-        <aside className="layer-2-dark-glass vet-sidebar-3d">
-          <div>
-            <div className="brand-3d-badge">🩺 PetPulse Vet</div>
-            <div style={{ marginTop: "1.5rem" }}>
-              <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                Dr. {user.first_name} {user.last_name || user.username}
-              </div>
-              <div style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "0.2rem" }}>
-                License: {user.license_number || "Verified"}
-              </div>
-              <div style={{ fontSize: "0.82rem", opacity: 0.8 }}>
-                {user.clinic_name || "Veterinary Clinic Portal"}
-              </div>
-            </div>
+    <ThreeLayerShell variant="dashboard">
+      {/* LAYER 2: Responsive Frosted Glass Stage (Left Sidebar on Desktop, Top Header + Bottom Bar on Mobile) */}
+      <div className="layer-2-glass-stage adaptive-dashboard-stage">
+        {/* Desktop Sidebar / Mobile Sticky Top Header */}
+        <aside className="layer-2-brand-panel adaptive-sidebar">
+          <div className="sidebar-top-row">
+            <div className="brand-pill-3d">🩺 PetPulse Vet</div>
+            <span className="role-badge vet">Veterinarian</span>
           </div>
 
-          <div style={{ fontSize: "0.78rem", opacity: 0.75 }}>
-            Clinical Desktop View • {user.dashboard_route}
+          <nav className="desktop-side-nav">
+            <button
+              type="button"
+              className={`side-nav-item ${activeTab === "home" ? "active" : ""}`}
+              onClick={() => setActiveTab("home")}
+            >
+              🏥 Clinic Overview
+            </button>
+            <button
+              type="button"
+              className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
+              onClick={() => setActiveTab("settings")}
+            >
+              ⚙️ Account Settings
+            </button>
+          </nav>
+
+          <div className="sidebar-footer">
+            Dr. {user.last_name || user.username} • {user.license_number || "Verified"}
           </div>
         </aside>
 
-        {/* Right Clinical Workspace Deck containing LAYER 3 Elevated 3D Cards */}
-        <section className="vet-workspace-deck">
-          <div className="layer-3-card">
-            <span className="role-badge vet">Veterinarian Desktop Dashboard</span>
-            <h2 style={{ margin: "0.5rem 0 0.25rem" }}>
-              Welcome, Dr. {user.last_name || user.username}
-            </h2>
-            <p className="muted" style={{ margin: 0 }}>
-              Routed automatically to <code>{user.dashboard_route}</code> based on your{" "}
-              <strong>VETERINARIAN</strong> role (US-15).
-            </p>
+        {/* Main Content Area containing Top-Right Profile Dropdown + LAYER 3 Active Tab Card */}
+        <section className="adaptive-main-content">
+          <div className="workspace-topbar">
+            <UserProfileMenu user={user} onLogout={onLogout} />
           </div>
 
-          <div className="layer-3-card interactive">
-            <h3 style={{ marginTop: 0, color: "var(--primary-teal)" }}>
-              Patient Medical Records &amp; Prescriptions Workspace
-            </h3>
-            <p className="muted">
-              Authorized pet medical files, visit summaries, and digital prescriptions will
-              appear here as we implement the upcoming User Stories.
-            </p>
-          </div>
+          {activeTab === "home" ? (
+            <div className="layer-3-card interactive">
+              <span className="role-badge vet">
+                Veterinarian / Clinic Staff Portal (וטרינר)
+              </span>
+              <h2 className="welcome-heading">
+                Welcome, Dr. {user.first_name} {user.last_name || user.username}! 🩺
+              </h2>
+              <p className="welcome-body">
+                You have been authenticated and routed to{" "}
+                <code>{user.dashboard_route}</code>.
+              </p>
+
+              <div className="user-info-grid">
+                <div className="info-pill">
+                  <span className="info-label">Veterinarian</span>
+                  <strong>
+                    Dr. {user.first_name} {user.last_name || user.username}
+                  </strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">License Number</span>
+                  <strong>{user.license_number || "—"}</strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">Clinic Name</span>
+                  <strong>{user.clinic_name || "Not specified"}</strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">Email</span>
+                  <strong>{user.email}</strong>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <ChangePasswordCard />
+          )}
         </section>
+
+        {/* Mobile Sticky Bottom Tab Bar (Visible on <768px) */}
+        <nav className="mobile-bottom-bar">
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "home" ? "active" : ""}`}
+            onClick={() => setActiveTab("home")}
+          >
+            <span>🏥</span>
+            <span>Clinic Home</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            <span>⚙️</span>
+            <span>Account Settings</span>
+          </button>
+        </nav>
       </div>
     </ThreeLayerShell>
   );
 }
-
