@@ -1,9 +1,10 @@
 import django
+from django.conf import settings
 from django.contrib import admin
 from django.db import connection
 from django.db.migrations.recorder import MigrationRecorder
-from django.http import JsonResponse
-from django.urls import include, path
+from django.http import HttpResponse, JsonResponse
+from django.urls import include, path, re_path
 from django.utils import timezone
 
 
@@ -45,9 +46,27 @@ def system_metrics(request):
     )
 
 
+def serve_react_app(request):
+    """
+    Serves the compiled React SPA (frontend/dist/index.html) in unified production mode,
+    or a helpful JSON hint if running in local API-only dev mode without a frontend build.
+    """
+    index_path = settings.FRONTEND_DIST_DIR / "index.html"
+    if index_path.exists():
+        return HttpResponse(index_path.read_text(encoding="utf-8"), content_type="text/html")
+    return JsonResponse(
+        {
+            "status": "ok",
+            "project": "PetPulse API",
+            "message": "Frontend build not found at frontend/dist/index.html. Run 'npm run build --prefix frontend' or use http://localhost:5173 in local dev.",
+        }
+    )
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health_check, name="api-health"),
     path("api/metrics/", system_metrics, name="api-metrics"),
     path("api/auth/", include("accounts.urls")),
+    re_path(r"^(?!api/|admin/|static/|media/).*$", serve_react_app, name="spa-entry"),
 ]

@@ -17,3 +17,8 @@ class CoreHealthAndMetricsTests(TestCase):
         self.assertTrue(data["database"]["connected"])
         self.assertGreater(data["database"]["applied_migrations"], 0)
 
+    def test_spa_root_route(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+
