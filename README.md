@@ -56,6 +56,14 @@ python -m venv .venv
 ``
 .venv/bin/python backend/manage.py runserver
 
+<<<<<<< Updated upstream
+=======
+
+.venv/bin/python backend/manage.py runserver
+
+cd frontend && npm run dev
+
+>>>>>>> Stashed changes
 ### 3. Set Up the Frontend (React + Vite)
 
 Open a **second terminal** in the project folder:
