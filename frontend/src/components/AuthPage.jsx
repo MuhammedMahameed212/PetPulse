@@ -57,56 +57,44 @@ export default function AuthPage({ onAuthSuccess }) {
 
   return (
     <ThreeLayerShell variant="auth">
-      {/* LAYER 2: Frosted Glass 2-Column Stage */}
+      {/* LAYER 2: Frosted Glass Stage (2-Column on Desktop, Stacked Single-Column on Mobile) */}
       <div className="layer-2-glass-stage auth-split-stage">
-        {/* Left Brand & Value Proposition Glass Panel */}
-        <aside className="layer-2-dark-glass auth-hero-panel">
+        {/* Left / Top Brand Hero Panel */}
+        <aside className="layer-2-brand-panel auth-hero-panel">
           <div>
-            <div className="brand-3d-badge">🐾 PetPulse</div>
-            <h1 style={{ fontSize: "1.9rem", margin: "1.25rem 0 0.5rem" }}>
-              Every Pet’s Health Story, Connected in One Place.
+            <div className="brand-pill-3d">🐾 PetPulse</div>
+            <h1 className="hero-title">
+              Smart Pet Care &amp; Veterinary Collaboration
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.82)", fontSize: "0.94rem", lineHeight: 1.55 }}>
-              Manage vaccinations, medications, digital prescriptions, AI medical document
-              extraction, and direct veterinary consultations.
+            <p className="hero-subtitle">
+              Centralize your pet’s medical records, vaccinations, medications, and
+              veterinary care in one connected platform.
             </p>
 
-            <div className="feature-pill-list">
-              <div className="feature-pill-3d">
-                <span style={{ fontSize: "1.35rem" }}>📋</span>
+            <div className="hero-feature-list">
+              <div className="hero-feature-item">
+                <span className="feature-icon">📋</span>
                 <div>
-                  <strong>Interactive Digital Medical File</strong>
-                  <div style={{ fontSize: "0.8rem", opacity: 0.82 }}>
-                    Chronological history of vaccines, treatments &amp; meds
+                  <strong>Digital Medical File</strong>
+                  <div className="feature-desc">
+                    Complete chronological history for every pet
                   </div>
                 </div>
               </div>
 
-              <div className="feature-pill-3d">
-                <span style={{ fontSize: "1.35rem" }}>🩺</span>
+              <div className="hero-feature-item">
+                <span className="feature-icon">🩺</span>
                 <div>
-                  <strong>Two-Way Vet &amp; Owner Collaboration</strong>
-                  <div style={{ fontSize: "0.8rem", opacity: 0.82 }}>
-                    Dedicated portals for Pet Owners &amp; Veterinarians
-                  </div>
-                </div>
-              </div>
-
-              <div className="feature-pill-3d">
-                <span style={{ fontSize: "1.35rem" }}>✨</span>
-                <div>
-                  <strong>AI Medical Document Extraction</strong>
-                  <div style={{ fontSize: "0.8rem", opacity: 0.82 }}>
-                    Smart scanning with owner review &amp; approval
+                  <strong>Role-Based Portals</strong>
+                  <div className="feature-desc">
+                    Tailored views for Pet Owners &amp; Veterinarians
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{ fontSize: "0.78rem", opacity: 0.72 }}>
-            PetPulse Platform • Milestone 1 (US-15 Authentication &amp; Role Routing)
-          </div>
+          <div className="hero-footer">US-15 • Registration &amp; Authentication</div>
         </aside>
 
         {/* Right Form Panel containing LAYER 3 Elevated 3D Card */}
@@ -140,33 +128,31 @@ export default function AuthPage({ onAuthSuccess }) {
             <form onSubmit={handleSubmit}>
               {mode === "register" && (
                 <>
-                  <label>Choose Your Role</label>
+                  <label>Select Account Role</label>
                   <div className="role-selector-grid">
-                    <div
+                    <button
+                      type="button"
                       className={`role-tile-3d ${
                         formData.role === "PET_OWNER" ? "selected" : ""
                       }`}
                       onClick={() => updateField("role", "PET_OWNER")}
                     >
-                      <div style={{ fontSize: "1.35rem" }}>🐾</div>
-                      <strong style={{ fontSize: "0.86rem" }}>Pet Owner</strong>
-                      <div className="muted" style={{ fontSize: "0.74rem" }}>
-                        בעל חיית מחמד
-                      </div>
-                    </div>
+                      <span className="role-icon">🐾</span>
+                      <strong>Pet Owner</strong>
+                      <span className="role-sub">בעל חיית מחמד</span>
+                    </button>
 
-                    <div
+                    <button
+                      type="button"
                       className={`role-tile-3d ${
                         formData.role === "VETERINARIAN" ? "selected" : ""
                       }`}
                       onClick={() => updateField("role", "VETERINARIAN")}
                     >
-                      <div style={{ fontSize: "1.35rem" }}>🩺</div>
-                      <strong style={{ fontSize: "0.86rem" }}>Veterinarian</strong>
-                      <div className="muted" style={{ fontSize: "0.74rem" }}>
-                        רופא וטרינר / מרפאה
-                      </div>
-                    </div>
+                      <span className="role-icon">🩺</span>
+                      <strong>Veterinarian</strong>
+                      <span className="role-sub">וטרינר / צוות מרפאה</span>
+                    </button>
                   </div>
 
                   <div className="row-2">
@@ -176,6 +162,7 @@ export default function AuthPage({ onAuthSuccess }) {
                         className="layer-3-input"
                         value={formData.first_name}
                         onChange={(e) => updateField("first_name", e.target.value)}
+                        placeholder="Noa"
                         required
                       />
                     </div>
@@ -185,6 +172,7 @@ export default function AuthPage({ onAuthSuccess }) {
                         className="layer-3-input"
                         value={formData.last_name}
                         onChange={(e) => updateField("last_name", e.target.value)}
+                        placeholder="Cohen"
                         required
                       />
                     </div>
@@ -196,6 +184,7 @@ export default function AuthPage({ onAuthSuccess }) {
                     className="layer-3-input"
                     value={formData.email}
                     onChange={(e) => updateField("email", e.target.value)}
+                    placeholder="name@example.com"
                     required
                   />
 
@@ -204,6 +193,7 @@ export default function AuthPage({ onAuthSuccess }) {
                     className="layer-3-input"
                     value={formData.phone_number}
                     onChange={(e) => updateField("phone_number", e.target.value)}
+                    placeholder="054-000-0000"
                   />
 
                   {formData.role === "VETERINARIAN" && (
@@ -237,6 +227,7 @@ export default function AuthPage({ onAuthSuccess }) {
                 className="layer-3-input"
                 value={formData.username}
                 onChange={(e) => updateField("username", e.target.value)}
+                placeholder="Enter your username"
                 required
               />
 
@@ -246,6 +237,7 @@ export default function AuthPage({ onAuthSuccess }) {
                 className="layer-3-input"
                 value={formData.password}
                 onChange={(e) => updateField("password", e.target.value)}
+                placeholder="••••••••"
                 required
               />
 
@@ -257,6 +249,7 @@ export default function AuthPage({ onAuthSuccess }) {
                     className="layer-3-input"
                     value={formData.password_confirm}
                     onChange={(e) => updateField("password_confirm", e.target.value)}
+                    placeholder="••••••••"
                     required
                   />
                 </>
@@ -264,7 +257,7 @@ export default function AuthPage({ onAuthSuccess }) {
 
               <button type="submit" className="btn-3d" disabled={loading}>
                 {loading
-                  ? "Authenticating..."
+                  ? "Please wait..."
                   : mode === "login"
                   ? "Sign In to PetPulse →"
                   : "Create PetPulse Account →"}
@@ -276,4 +269,3 @@ export default function AuthPage({ onAuthSuccess }) {
     </ThreeLayerShell>
   );
 }
-

@@ -1,57 +1,107 @@
-import React from "react";
+import React, { useState } from "react";
+import ChangePasswordCard from "./ChangePasswordCard";
 import ThreeLayerShell from "./ThreeLayerShell";
+import UserProfileMenu from "./UserProfileMenu";
 
-export default function OwnerDashboard({ user }) {
+export default function OwnerDashboard({ user, onLogout }) {
+  const [activeTab, setActiveTab] = useState("home"); // "home" | "settings"
+
   return (
-    <ThreeLayerShell variant="owner">
-      {/* LAYER 2: Frosted Glass Mobile Device Frame */}
-      <div className="layer-2-glass-stage owner-mobile-bezel">
-        {/* Top Mobile Header Card (Layer 3) */}
-        <header className="layer-3-card mobile-top-bar">
-          <div>
-            <span className="role-badge owner">🐾 Pet Owner App</span>
-            <h3 style={{ margin: "0.3rem 0 0" }}>
-              Hi, {user.first_name || user.username}!
-            </h3>
+    <ThreeLayerShell variant="dashboard">
+      {/* LAYER 2: Responsive Frosted Glass Stage (Left Sidebar on Desktop, Top Header + Bottom Bar on Mobile) */}
+      <div className="layer-2-glass-stage adaptive-dashboard-stage">
+        {/* Desktop Sidebar / Mobile Sticky Top Header */}
+        <aside className="layer-2-brand-panel adaptive-sidebar">
+          <div className="sidebar-top-row">
+            <div className="brand-pill-3d">🐾 PetPulse</div>
+            <span className="role-badge owner">Pet Owner</span>
           </div>
-          <div style={{ fontSize: "1.4rem" }}>🔔</div>
-        </header>
 
-        {/* Main Elevated 3D Content Card (Layer 3) */}
-        <div className="layer-3-card interactive">
-          <h4 style={{ marginTop: 0, color: "var(--primary-teal)" }}>
-            ✓ Automatic Role Routing Active (US-15)
-          </h4>
-          <p style={{ fontSize: "0.92rem", lineHeight: 1.5 }}>
-            Welcome to your <strong>Pet Owner Mobile Portal</strong> (
-            <code>{user.dashboard_route}</code>).
-          </p>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            Email: {user.email} • Username: @{user.username}
-          </p>
-        </div>
+          <nav className="desktop-side-nav">
+            <button
+              type="button"
+              className={`side-nav-item ${activeTab === "home" ? "active" : ""}`}
+              onClick={() => setActiveTab("home")}
+            >
+              🏠 Home Overview
+            </button>
+            <button
+              type="button"
+              className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
+              onClick={() => setActiveTab("settings")}
+            >
+              ⚙️ Account Settings
+            </button>
+          </nav>
 
-        {/* Sticky 3D Bottom Navigation Dock */}
-        <nav className="mobile-bottom-dock">
-          <button type="button" className="dock-item active">
-            <span>🐶</span>
-            <span>My Pets</span>
+          <div className="sidebar-footer">
+            Signed in as <strong>@{user.username}</strong>
+          </div>
+        </aside>
+
+        {/* Main Content Area containing Top-Right Profile Dropdown + LAYER 3 Active Tab Card */}
+        <section className="adaptive-main-content">
+          <div className="workspace-topbar">
+            <UserProfileMenu user={user} onLogout={onLogout} />
+          </div>
+
+          {activeTab === "home" ? (
+            <div className="layer-3-card interactive">
+              <span className="role-badge owner">Pet Owner Portal (בעל חיית מחמד)</span>
+              <h2 className="welcome-heading">
+                Welcome, {user.first_name || user.username}! 🐾
+              </h2>
+              <p className="welcome-body">
+                You have been authenticated and routed to{" "}
+                <code>{user.dashboard_route}</code>.
+              </p>
+
+              <div className="user-info-grid">
+                <div className="info-pill">
+                  <span className="info-label">Full Name</span>
+                  <strong>
+                    {user.first_name} {user.last_name || "—"}
+                  </strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">Username</span>
+                  <strong>@{user.username}</strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">Email</span>
+                  <strong>{user.email}</strong>
+                </div>
+                <div className="info-pill">
+                  <span className="info-label">Phone</span>
+                  <strong>{user.phone_number || "Not provided"}</strong>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <ChangePasswordCard />
+          )}
+        </section>
+
+        {/* Mobile Sticky Bottom Tab Bar (Visible on <768px) */}
+        <nav className="mobile-bottom-bar">
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "home" ? "active" : ""}`}
+            onClick={() => setActiveTab("home")}
+          >
+            <span>🏠</span>
+            <span>Home</span>
           </button>
-          <button type="button" className="dock-item">
-            <span>📋</span>
-            <span>Medical</span>
-          </button>
-          <button type="button" className="dock-item">
-            <span>⏰</span>
-            <span>Reminders</span>
-          </button>
-          <button type="button" className="dock-item">
-            <span>🗺️</span>
-            <span>Map</span>
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            <span>⚙️</span>
+            <span>Account Settings</span>
           </button>
         </nav>
       </div>
     </ThreeLayerShell>
   );
 }
-
