@@ -25,4 +25,5 @@ class User(AbstractUser):
     clinic_name = models.CharField(max_length=150, blank=True)
 
     def __str__(self) -> str:
-        return f"{self.username} ({self.get_role_display()})"
+        role_label = self.Role(self.role).label if self.role in self.Role.values else self.role
+        return f"{self.username} ({role_label})"

@@ -1,0 +1,340 @@
+name: PetPulse CI/CD & Metrics Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  backend-ci:
+    name: Backend (Django Tests & Coverage)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install Python dependencies & coverage tool
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt coverage
+
+      - name: Django system check
+        run: python backend/manage.py check
+
+      - name: Check for missing database migrations
+        run: python backend/manage.py makemigrations --check --dry-run
+
+      - name: Apply database migrations
+        run: python backend/manage.py migrate
+
+      - name: Run Django tests with Coverage Metrics
+        run: |
+          coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts --verbosity=2
+          coverage report --rcfile=.coveragerc -m
+          coverage xml --rcfile=.coveragerc -o coverage.xml
+
+      - name: Publish Backend Coverage Breakdown to Job Summary
+        if: always()
+        run: |
+          echo "## 🐍 Backend Test & Coverage Breakdown" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          coverage report --rcfile=.coveragerc --format=markdown >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Coverage XML Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: coverage.xml
+
+  frontend-ci:
+    name: Frontend (React Vite Build & Bundle Size)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build production React bundle
+        run: npm run build
+
+      - name: Publish Frontend Build Metrics to Job Summary
+        run: |
+          echo "## ⚛️ Frontend Production Bundle Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size (Bytes) |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | ---: |" >> $GITHUB_STEP_SUMMARY
+          for f in dist/assets/*; do
+            if [ -f "$f" ]; then
+              size=$(wc -c < "$f" | tr -d ' ')
+              echo "| \`$(basename "$f")\` | ${size} B |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  dora-metrics:
+    name: DORA & CI Quality Metrics Report
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+    if: always()
+
+    steps:
+      - name: Download Backend Coverage XML Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: backend-coverage-report
+          path: .
+
+      - name: Compute DORA & Engineering Quality Metrics
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+          BACKEND_RESULT: ${{ needs.backend-ci.result }}
+          FRONTEND_RESULT: ${{ needs.frontend-ci.result }}
+        run: |
+          python3 - << 'EOF'
+          import json
+          import os
+          import urllib.request
+          import xml.etree.ElementTree as ET
+          from datetime import datetime, timezone
+
+          repo = os.environ["REPO"]
+          token = os.environ.get("GH_TOKEN", "")
+          current_run_id = int(os.environ.get("CURRENT_RUN_ID", "0"))
+          current_success = (
+              os.environ.get("BACKEND_RESULT") == "success"
+              and os.environ.get("FRONTEND_RESULT") == "success"
+          )
+
+          def gh_api(path):
+              url = f"https://api.github.com/repos/{repo}{path}"
+              req = urllib.request.Request(
+                  url,
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}" if token else "",
+                      "User-Agent": "PetPulse-DORA-Metrics",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=15) as resp:
+                      return json.loads(resp.read().decode("utf-8"))
+              except Exception:
+                  return {}
+
+          def parse_iso(ts):
+              return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+          # 1. Test Coverage (from coverage.xml)
+          coverage_pct = 0.0
+          lines_covered = 0
+          lines_valid = 0
+          if os.path.exists("coverage.xml"):
+              tree = ET.parse("coverage.xml")
+              root = tree.getroot()
+              coverage_pct = float(root.attrib.get("line-rate", 0.0)) * 100.0
+              lines_covered = int(root.attrib.get("lines-covered", 0))
+              lines_valid = int(root.attrib.get("lines-valid", 0))
+
+          # 2. Fetch Workflow Runs for Deployment Frequency, CFR, MTTR, and Build Success Rate
+          runs_data = gh_api("/actions/runs?per_page=100")
+          all_runs = [
+              r for r in runs_data.get("workflow_runs", [])
+              if r.get("status") == "completed" and r.get("id") != current_run_id
+          ]
+
+          # Include current run in Build Success Rate
+          total_builds = len(all_runs) + 1
+          successful_builds = sum(1 for r in all_runs if r.get("conclusion") == "success") + (1 if current_success else 0)
+          build_success_rate = (successful_builds / total_builds * 100.0) if total_builds else 100.0
+
+          # Filter runs on main branch for DORA Deployment Frequency, Change Failure Rate & MTTR
+          main_runs = [r for r in all_runs if r.get("head_branch") == "main"]
+          now = datetime.now(timezone.utc)
+          main_success_30d = [
+              r for r in main_runs
+              if r.get("conclusion") == "success"
+              and (now - parse_iso(r["created_at"])).days <= 30
+          ]
+          deploy_count_30d = len(main_success_30d) + (1 if current_success else 0)
+          deploy_per_week = deploy_count_30d / 4.2857
+
+          # Change Failure Rate on main
+          total_main_runs = len(main_runs) + 1
+          failed_main_runs = sum(1 for r in main_runs if r.get("conclusion") == "failure") + (0 if current_success else 1)
+          change_failure_rate = (failed_main_runs / total_main_runs * 100.0) if total_main_runs else 0.0
+
+          # MTTR (Mean Time to Recovery on main, chronological order)
+          main_chronological = sorted(main_runs, key=lambda r: r["created_at"])
+          recovery_durations_min = []
+          failure_start = None
+          for r in main_chronological:
+              if r.get("conclusion") == "failure" and failure_start is None:
+                  failure_start = parse_iso(r["created_at"])
+              elif r.get("conclusion") == "success" and failure_start is not None:
+                  recovered_at = parse_iso(r["updated_at"])
+                  diff_min = max(0.0, (recovered_at - failure_start).total_seconds() / 60.0)
+                  recovery_durations_min.append(diff_min)
+                  failure_start = None
+          if failure_start is not None and current_success:
+              diff_min = max(0.0, (now - failure_start).total_seconds() / 60.0)
+              recovery_durations_min.append(diff_min)
+
+          if recovery_durations_min:
+              mttr_min = sum(recovery_durations_min) / len(recovery_durations_min)
+              mttr_display = f"{mttr_min:.1f} min ({mttr_min / 60:.2f} hrs)"
+          else:
+              mttr_min = 0.0
+              mttr_display = "0 min (No recovery incidents)"
+
+          # 3. Lead Time for Changes (from merged Pull Requests)
+          prs = gh_api("/pulls?state=closed&per_page=50")
+          lead_times_hours = []
+          if isinstance(prs, list):
+              for pr in prs:
+                  if pr.get("merged_at") and pr.get("created_at"):
+                      created = parse_iso(pr["created_at"])
+                      merged = parse_iso(pr["merged_at"])
+                      lead_times_hours.append(max(0.0, (merged - created).total_seconds() / 3600.0))
+
+          if lead_times_hours:
+              avg_lead_hours = sum(lead_times_hours) / len(lead_times_hours)
+              if avg_lead_hours < 1.0:
+                  lead_time_display = f"{avg_lead_hours * 60:.1f} min ({len(lead_times_hours)} merged PRs)"
+              else:
+                  lead_time_display = f"{avg_lead_hours:.2f} hrs ({len(lead_times_hours)} merged PRs)"
+          else:
+              avg_lead_hours = 0.0
+              lead_time_display = "< 1 hr (Direct/initial merges)"
+
+          metrics_payload = {
+              "generated_at": now.isoformat(),
+              "repository": repo,
+              "metrics": {
+                  "lead_time_for_changes": {
+                      "average_hours": round(avg_lead_hours, 2),
+                      "merged_prs_sampled": len(lead_times_hours),
+                      "display": lead_time_display,
+                  },
+                  "deployment_frequency": {
+                      "deployments_last_30_days": deploy_count_30d,
+                      "deployments_per_week": round(deploy_per_week, 2),
+                      "display": f"{deploy_count_30d} in last 30d ({deploy_per_week:.1f}/week)",
+                  },
+                  "mttr": {
+                      "average_minutes": round(mttr_min, 2),
+                      "incidents_recovered": len(recovery_durations_min),
+                      "display": mttr_display,
+                  },
+                  "change_failure_rate": {
+                      "percentage": round(change_failure_rate, 2),
+                      "failed_main_runs": failed_main_runs,
+                      "total_main_runs": total_main_runs,
+                      "display": f"{change_failure_rate:.1f}% ({failed_main_runs}/{total_main_runs} main runs)",
+                  },
+                  "build_success_rate": {
+                      "percentage": round(build_success_rate, 2),
+                      "successful_builds": successful_builds,
+                      "total_builds": total_builds,
+                      "display": f"{build_success_rate:.1f}% ({successful_builds}/{total_builds} builds)",
+                  },
+                  "test_coverage": {
+                      "percentage": round(coverage_pct, 2),
+                      "lines_covered": lines_covered,
+                      "lines_valid": lines_valid,
+                      "display": f"{coverage_pct:.1f}% ({lines_covered}/{lines_valid} lines)",
+                  },
+              },
+          }
+
+          with open("dora_metrics.json", "w", encoding="utf-8") as f:
+              json.dump(metrics_payload, f, indent=2)
+
+          md_lines = [
+              "## 📊 DORA & CI/CD Engineering Quality Metrics",
+              "",
+              "| Metric | Current Value | Target / Benchmark | Details |",
+              "| :--- | :--- | :--- | :--- |",
+              f"| **1. Lead Time for Changes** | **{lead_time_display}** | `< 24 hrs` (Elite) | Avg time from PR open to merge |",
+              f"| **2. Deployment Frequency** | **{deploy_count_30d} deploys / 30d** (`{deploy_per_week:.1f}/wk`) | On-demand / multiple per week | Successful `main` pipeline runs |",
+              f"| **3. Mean Time to Recovery (MTTR)** | **{mttr_display}** | `< 1 hr` (Elite) | Avg time from `main` failure to recovery |",
+              f"| **4. Change Failure Rate (CFR)** | **{change_failure_rate:.1f}%** | `0% – 15%` (Elite) | `{failed_main_runs}` failed out of `{total_main_runs}` `main` runs |",
+              f"| **5. Build Success Rate** | **{build_success_rate:.1f}%** | `> 90%` | `{successful_builds}` passed out of `{total_builds}` total CI runs |",
+              f"| **6. Backend Test Coverage** | **{coverage_pct:.1f}%** | `> 80%` | `{lines_covered}/{lines_valid}` statements covered |",
+              "",
+          ]
+          md_report = "\n".join(md_lines)
+          with open("dora_metrics.md", "w", encoding="utf-8") as f:
+              f.write(md_report)
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as sf:
+                  sf.write(md_report)
+
+          print(md_report)
+          EOF
+
+      - name: Upload DORA & Quality Metrics Artifact (JSON + Markdown)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-and-quality-metrics
+          path: |
+            dora_metrics.json
+            dora_metrics.md
+
+  deploy-production:
+    name: CD — Deploy to Render (main only, after tests pass)
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - name: Trigger Render Production Deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          echo "## 🚀 Continuous Deployment (Render.com)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${GITHUB_REF_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${GITHUB_SHA}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** \`${GITHUB_EVENT_NAME}\`" >> $GITHUB_STEP_SUMMARY
+
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL secret is not set yet. Skipping automatic Render trigger."
+            echo "- **Status:** ⚠️ Skipped (\`RENDER_DEPLOY_HOOK_URL\` secret not configured in GitHub repository settings)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+          echo ""
+          echo "✅ Render deployment triggered successfully for commit ${GITHUB_SHA}."
+          echo "- **Status:** ✅ Triggered Render Deploy Hook after all Backend & Frontend checks passed" >> $GITHUB_STEP_SUMMARY
