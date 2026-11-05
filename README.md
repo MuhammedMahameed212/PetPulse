@@ -56,6 +56,12 @@ python -m venv .venv
 ``
 .venv/bin/python backend/manage.py runserver
 
+
+.venv/bin/python backend/manage.py runserver
+
+cd frontend
+npm run dev
+
 ### 3. Set Up the Frontend (React + Vite)
 
 Open a **second terminal** in the project folder:

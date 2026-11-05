@@ -8,3 +8,4 @@ urlpatterns = [
     path("change-password/", ChangePasswordView.as_view(), name="auth-change-password"),
     path("me/", CurrentUserView.as_view(), name="auth-me"),
 ]
+

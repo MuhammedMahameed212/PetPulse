@@ -13,3 +13,4 @@ class UserAdmin(BaseUserAdmin):
             {"fields": ("role", "phone_number", "license_number", "clinic_name")},
         ),
     )
+
