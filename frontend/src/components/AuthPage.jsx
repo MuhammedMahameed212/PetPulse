@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { apiFetch, setStoredAuth } from "../api";
 import ThreeLayerShell from "./ThreeLayerShell";
 
-export default function AuthPage({ onAuthSuccess }) {
-  const [mode, setMode] = useState("login"); // "login" | "register"
+export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackToLanding }) {
+  const [mode, setMode] = useState(initialMode); // "login" | "register"
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -100,6 +100,15 @@ export default function AuthPage({ onAuthSuccess }) {
         {/* Right Form Panel containing LAYER 3 Elevated 3D Card */}
         <section className="auth-form-stage">
           <div className="layer-3-card">
+            {onBackToLanding && (
+              <button
+                type="button"
+                className="back-to-home-btn"
+                onClick={onBackToLanding}
+              >
+                ← Back to PetPulse Home
+              </button>
+            )}
             <div className="mode-tabs-3d">
               <button
                 type="button"
