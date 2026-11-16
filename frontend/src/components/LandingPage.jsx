@@ -9,7 +9,7 @@ const PET_PROFILES = {
     age: "2 yrs 4 mos",
     avatar: "🐕",
     status: "Excellent",
-    statusColor: "#059669",
+    statusColor: "#22d3ee",
     weight: "28.4 kg",
     weightDiff: "+0.2 kg this month",
     weightHistory: [26.8, 27.2, 27.9, 28.2, 28.4],
@@ -27,7 +27,7 @@ const PET_PROFILES = {
     age: "1 yr 8 mos",
     avatar: "🐈",
     status: "Up to Date",
-    statusColor: "#0d9488",
+    statusColor: "#818cf8",
     weight: "4.1 kg",
     weightDiff: "Stable weight",
     weightHistory: [3.8, 3.9, 4.0, 4.1, 4.1],
@@ -189,7 +189,7 @@ export default function LandingPage({ onGoToAuth }) {
 
         {/* Live Activity Ticker Bar */}
         <div className="live-activity-ticker" aria-label="Recent platform activity">
-          <span className="ticker-label">🟢 LIVE ACTIVITY:</span>
+          <span className="ticker-label">⚡ LIVE ACTIVITY:</span>
           <div className="ticker-track">
             <span className="ticker-item">🐾 <strong>Milo</strong> received Rabies Booster • Tel Aviv Clinic</span>
             <span className="ticker-separator">•</span>
@@ -275,6 +275,14 @@ export default function LandingPage({ onGoToAuth }) {
                 transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.02, 1.02, 1.02)`,
               }}
             >
+              {/* Floating 3D Parallax Badges */}
+              <div className="float-3d-badge badge-top-right" aria-hidden="true">
+                🩺 Vet Synced
+              </div>
+              <div className="float-3d-badge badge-bottom-left" aria-hidden="true">
+                ⚡ Live Vitals
+              </div>
+
               {/* Card Header */}
               <div className="pet-card-header">
                 <div className="pet-avatar-circle animate-pulse-avatar">
