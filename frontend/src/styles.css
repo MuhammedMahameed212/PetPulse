@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
 :root {
   --primary-teal: #0f766e;
   --primary-teal-dark: #094b46;
@@ -1456,61 +1458,6 @@ label {
    DYNAMIC 3D, VIDEO BACKDROP & INTERACTIVE PLAYGROUND EXTENSIONS
    ========================================================================== */
 
-/* Cinematic Video Backdrop */
-.landing-video-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.landing-bg-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.85) saturate(1.2);
-}
-
-.landing-video-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(224, 242, 254, 0.75) 0%,
-    rgba(240, 253, 250, 0.82) 50%,
-    rgba(204, 251, 241, 0.78) 100%
-  );
-  backdrop-filter: blur(8px);
-}
-
-/* Video Toggle Button */
-.btn-video-toggle {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--border-light);
-  color: var(--text-dark);
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  transition: all 0.2s ease;
-}
-
-.btn-video-toggle.active {
-  background: #f0fdf4;
-  border-color: #86efac;
-  color: #166534;
-}
-
-.btn-video-toggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
 /* Live Activity Ticker */
 .live-activity-ticker {
   background: rgba(255, 255, 255, 0.9);
@@ -2249,4 +2196,437 @@ label {
   box-shadow: 0 0 10px rgba(13, 148, 136, 0.4);
 }
 
+/* ==========================================================================
+   LANDING EXPERIENCE — stacking repair and modern visual direction
+   ========================================================================== */
 
+.scene-landing {
+  align-items: flex-start;
+  padding: 1.25rem;
+  overflow: clip;
+  background:
+    radial-gradient(circle at 12% 9%, rgba(45, 212, 191, 0.28), transparent 26rem),
+    radial-gradient(circle at 88% 16%, rgba(251, 146, 60, 0.2), transparent 24rem),
+    linear-gradient(145deg, #dff8f2 0%, #eef8f5 44%, #f8eee4 100%);
+}
+
+.scene-landing .variant-landing {
+  isolation: isolate;
+}
+
+.scene-landing .layer-1-canvas {
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+}
+
+.dynamic-experience {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+  padding: 0;
+  gap: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.dynamic-experience::before,
+.dynamic-experience::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(10px);
+  pointer-events: none;
+  animation: ambient-drift 9s ease-in-out infinite alternate;
+}
+
+.dynamic-experience::before {
+  width: 280px;
+  height: 280px;
+  top: 12rem;
+  right: -6rem;
+  background: rgba(45, 212, 191, 0.24);
+}
+
+.dynamic-experience::after {
+  width: 220px;
+  height: 220px;
+  top: 44rem;
+  left: -5rem;
+  background: rgba(251, 146, 60, 0.16);
+  animation-delay: -3s;
+}
+
+@keyframes ambient-drift {
+  to {
+    transform: translate3d(24px, -18px, 0) scale(1.08);
+  }
+}
+
+.dynamic-experience .landing-nav {
+  position: sticky;
+  top: 1rem;
+  z-index: 100;
+  min-height: 72px;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+.dynamic-experience .landing-brand .brand-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #073b3a;
+  box-shadow: 0 8px 18px rgba(7, 59, 58, 0.2);
+  font-size: 1.2rem;
+}
+
+.dynamic-experience .brand-name {
+  color: #092f2e;
+  letter-spacing: -0.045em;
+}
+
+.dynamic-experience .brand-badge-mini {
+  background: #e7f8f3;
+  border-color: #b9e9dc;
+  box-shadow: none;
+}
+
+.dynamic-experience .live-activity-ticker {
+  width: calc(100% - 4rem);
+  margin: 0.9rem auto 0;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(7, 59, 58, 0.88);
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(7, 59, 58, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.dynamic-experience .ticker-label,
+.dynamic-experience .ticker-item,
+.dynamic-experience .ticker-item strong {
+  color: #fff;
+}
+
+.dynamic-experience .ticker-label {
+  color: #7de3c7;
+}
+
+.dynamic-experience .landing-hero-grid {
+  min-height: 680px;
+  padding: clamp(3.5rem, 7vw, 7rem) clamp(1rem, 4vw, 4rem);
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+.dynamic-experience .landing-hero-heading {
+  max-width: 720px;
+  font-size: clamp(2.8rem, 5.5vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  color: #092f2e;
+  text-wrap: balance;
+}
+
+.dynamic-experience .landing-hero-subheading {
+  max-width: 590px;
+  color: #3e5f5d;
+  font-size: clamp(1rem, 1.4vw, 1.16rem);
+}
+
+.dynamic-experience .pill-badge-sparkle {
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.dynamic-experience .btn-hero-primary,
+.dynamic-experience .btn-portal-cta {
+  width: auto;
+  min-width: 190px;
+}
+
+.dynamic-experience .interactive-pet-selector-bar {
+  max-width: 610px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dynamic-experience .pet-pill-btn {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(12px);
+}
+
+.dynamic-experience .landing-hero-preview {
+  perspective: 1200px;
+}
+
+.dynamic-experience .preview-pet-card-3d {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 28px;
+  padding: clamp(1.1rem, 2.2vw, 1.75rem);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.64),
+    rgba(236, 250, 246, 0.46)
+  );
+  box-shadow:
+    0 35px 80px rgba(7, 59, 58, 0.18),
+    0 2px 0 rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+
+.dynamic-experience .scanner-banner-card,
+.dynamic-experience .landing-portals-section,
+.dynamic-experience .landing-features-section,
+.dynamic-experience .landing-bottom-cta {
+  margin-top: 1.25rem;
+}
+
+.dynamic-experience .landing-portals-section,
+.dynamic-experience .landing-features-section {
+  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 4rem);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 32px;
+  background: rgba(248, 252, 251, 0.46);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+}
+
+.dynamic-experience .scanner-banner-card {
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(45, 212, 191, 0.2), transparent 35%),
+    linear-gradient(135deg, #052e2d, #0a5450);
+}
+
+.dynamic-experience .section-title {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.dynamic-experience .feature-card-3d,
+.dynamic-experience .portal-dynamic-display-card {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(232, 248, 243, 0.4)
+  );
+  box-shadow:
+    0 18px 42px rgba(15, 75, 70, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+}
+
+.dynamic-experience .feature-card-3d {
+  min-height: 240px;
+  border-radius: 22px;
+}
+
+.dynamic-experience .feature-card-3d:hover {
+  transform: translateY(-7px);
+  border-color: #8bd8c8;
+  box-shadow: 0 24px 48px rgba(15, 118, 110, 0.12);
+}
+
+.dynamic-experience .pet-vitals-grid,
+.dynamic-experience .health-score-widget,
+.dynamic-experience .mock-document-sheet,
+.dynamic-experience .portal-mockup-frame,
+.dynamic-experience .mock-stat-tile,
+.dynamic-experience .interactive-pet-selector-bar {
+  border-color: rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(135%);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
+}
+
+.scene-auth .layer-2-glass-stage,
+.scene-dashboard .layer-2-glass-stage {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(26px) saturate(145%);
+  -webkit-backdrop-filter: blur(26px) saturate(145%);
+}
+
+.scene-auth .layer-3-card,
+.scene-dashboard .layer-3-card {
+  border-color: rgba(255, 255, 255, 0.78);
+  border-bottom-color: rgba(166, 204, 196, 0.62);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.72),
+    rgba(236, 249, 246, 0.56)
+  );
+  box-shadow:
+    0 22px 54px rgba(15, 62, 58, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+
+.scene-dashboard .info-pill,
+.scene-dashboard .profile-trigger-3d,
+.scene-dashboard .profile-dropdown-3d {
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.dynamic-experience .landing-bottom-cta {
+  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 14% 20%, rgba(94, 234, 212, 0.3), transparent 30%),
+    radial-gradient(circle at 86% 80%, rgba(251, 146, 60, 0.2), transparent 30%),
+    #073b3a;
+}
+
+.dynamic-experience .landing-footer {
+  margin-top: 1.25rem;
+  padding: 1.5rem 1rem 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .scene-landing {
+    padding: 0.65rem;
+  }
+
+  .dynamic-experience .landing-nav {
+    top: 0.65rem;
+  }
+
+  .dynamic-experience .brand-badge-mini {
+    display: none;
+  }
+
+  .dynamic-experience .landing-hero-grid {
+    min-height: auto;
+    padding-top: 4rem;
+  }
+
+  .dynamic-experience .landing-hero-preview {
+    width: min(100%, 620px);
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .dynamic-experience .landing-nav {
+    min-height: 64px;
+    padding: 0.65rem 0.75rem;
+    border-radius: 15px;
+  }
+
+  .dynamic-experience .landing-brand .brand-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dynamic-experience .landing-nav-actions {
+    gap: 0.4rem;
+  }
+
+  .dynamic-experience .btn-ghost-sm {
+    display: none;
+  }
+
+  .dynamic-experience .btn-primary-sm {
+    padding: 0.55rem 0.8rem;
+  }
+
+  .dynamic-experience .live-activity-ticker {
+    width: calc(100% - 1rem);
+  }
+
+  .dynamic-experience .landing-hero-grid {
+    padding: 3.25rem 0.35rem 3.5rem;
+  }
+
+  .dynamic-experience .landing-hero-heading {
+    font-size: clamp(2.55rem, 13vw, 3.7rem);
+  }
+
+  .dynamic-experience .landing-cta-row {
+    align-items: stretch;
+  }
+
+  .dynamic-experience .btn-hero-primary,
+  .dynamic-experience .btn-hero-secondary {
+    width: 100%;
+  }
+
+  .dynamic-experience .pet-pill-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dynamic-experience .pet-pill-btn {
+    padding: 0.55rem 0.25rem;
+    font-size: 0.74rem;
+  }
+
+  .dynamic-experience .pet-vitals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dynamic-experience .preview-notification-banner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .dynamic-experience .notif-action-btn,
+  .dynamic-experience .notif-completed-tag {
+    margin-left: 2.1rem;
+  }
+
+  .dynamic-experience .scanner-banner-card,
+  .dynamic-experience .landing-portals-section,
+  .dynamic-experience .landing-features-section,
+  .dynamic-experience .landing-bottom-cta {
+    border-radius: 22px;
+  }
+
+  .dynamic-experience .features-grid-3x2 {
+    grid-template-columns: 1fr;
+  }
+
+  .dynamic-experience .portal-toggle-buttons {
+    flex-direction: column;
+  }
+
+  .dynamic-toast-banner {
+    inset: 0.75rem 0.75rem auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dynamic-experience *,
+  .dynamic-experience *::before,
+  .dynamic-experience *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .dynamic-experience .dynamic-tilt-card {
+    transform: none !important;
+  }
+}

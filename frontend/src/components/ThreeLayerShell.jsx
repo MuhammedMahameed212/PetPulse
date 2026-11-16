@@ -8,7 +8,7 @@ import React from "react";
  */
 export default function ThreeLayerShell({ variant = "auth", children }) {
   return (
-    <div className="scene-3d-viewport">
+    <div className={`scene-3d-viewport scene-${variant}`}>
       {/* LAYER 1: Scenic Background Image & Ambient Depth Orbs */}
       <div className="layer-1-canvas" aria-hidden="true">
         <div className="ambient-orb orb-teal" />
@@ -23,4 +23,3 @@ export default function ThreeLayerShell({ variant = "auth", children }) {
     </div>
   );
 }
-
