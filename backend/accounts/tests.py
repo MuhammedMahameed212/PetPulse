@@ -1,5 +1,12 @@
+import re
+from datetime import timedelta
 from typing import Any, Protocol
-from django.test import TestCase
+from unittest import mock
+
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
+from django.core.cache import cache
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from .models import User
@@ -204,3 +211,126 @@ class US15RegistrationAndLoginTests(TestCase):
             format="json",
         )
         self.assertEqual(new_login.status_code, 200)
+
+
+RESET_URL = "/api/auth/password-reset/"
+CONFIRM_URL = "/api/auth/password-reset/confirm/"
+INVALID_LINK = "This reset link is invalid or has expired."
+RESET_SENT = "If an account uses that email, we've sent a reset link."
+
+
+@override_settings(FRONTEND_URL="http://app.test")
+class US22PasswordResetTests(TestCase):
+    def setUp(self):
+        cache.clear()  # throttle counts live in the cache
+        self.api_client = TypedAPIClient()
+        self.user = User.objects.create_user(
+            username="noa", email="noa@example.com", password="OldPassword123!"
+        )
+
+    def request_reset(self, email: str) -> APIResponseProtocol:
+        return self.api_client.post(RESET_URL, {"email": email}, format="json")
+
+    def test_ac2_ac3_registered_email_gets_one_reset_link(self):
+        res = self.request_reset("NOA@Example.com")
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data, {"detail": RESET_SENT})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["noa@example.com"])
+        self.assertRegex(
+            mail.outbox[0].body,
+            r"http://app\.test/reset-password\?uid=[\w-]+&token=[\w-]+",
+        )
+
+    def test_unknown_or_inactive_email_gets_the_same_answer_and_no_email(self):
+        User.objects.create_user(
+            username="gone", email="gone@example.com", password="OldPassword123!", is_active=False
+        )
+        for email in ("nobody@example.com", "gone@example.com"):
+            with self.subTest(email=email):
+                res = self.request_reset(email)
+                self.assertEqual(res.status_code, 200)
+                self.assertEqual(res.data, {"detail": RESET_SENT})
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_ac6_empty_or_malformed_email_is_rejected(self):
+        for email in ("", "not-an-email"):
+            with self.subTest(email=email):
+                res = self.request_reset(email)
+                self.assertEqual(res.status_code, 400)
+                self.assertIn("email", res.data)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_sixth_request_in_an_hour_is_throttled(self):
+        for _ in range(5):
+            self.assertEqual(self.request_reset("nobody@example.com").status_code, 200)
+        res = self.request_reset("nobody@example.com")
+        self.assertEqual(res.status_code, 429)
+        self.assertIn("Too many", res.data["detail"])
+
+    def reset_link_params(self) -> dict[str, str]:
+        self.request_reset(self.user.email)
+        match = re.search(r"\?uid=([\w-]+)&token=([\w-]+)", mail.outbox[-1].body)
+        assert match, mail.outbox[-1].body
+        return {"uid": match[1], "token": match[2]}
+
+    def confirm(self, params: dict[str, str], password="NewPassword456!", confirm=None) -> APIResponseProtocol:
+        body = {**params, "new_password": password, "new_password_confirm": confirm or password}
+        return self.api_client.post(CONFIRM_URL, body, format="json")
+
+    def login(self, password: str) -> int:
+        res = self.api_client.post(
+            "/api/auth/login/", {"username": "noa", "password": password}, format="json"
+        )
+        return res.status_code
+
+    def test_ac3_ac4_ac5_reset_then_sign_in_with_the_new_password(self):
+        res = self.confirm(self.reset_link_params())
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data, {"detail": "Password updated."})
+        self.assertEqual(self.login("NewPassword456!"), 200)
+        self.assertEqual(self.login("OldPassword123!"), 401)
+
+    def test_ac3_link_works_only_once(self):
+        params = self.reset_link_params()
+        self.assertEqual(self.confirm(params).status_code, 200)
+
+        res = self.confirm(params, password="OtherPassword789!")
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.data["token"], [INVALID_LINK])
+        self.assertEqual(self.login("NewPassword456!"), 200)
+
+    def test_ac3_link_expires_after_one_hour(self):
+        params = self.reset_link_params()
+        later = default_token_generator._now() + timedelta(hours=1, minutes=1)
+        with mock.patch.object(default_token_generator, "_now", return_value=later):
+            res = self.confirm(params)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.data["token"], [INVALID_LINK])
+
+    def test_ac6_altered_link_is_rejected(self):
+        params = self.reset_link_params()
+        cases = [
+            {**params, "token": params["token"] + "x"},
+            {**params, "uid": "OTk5"},  # base64 of a user id that doesn't exist
+            {**params, "uid": "!!not-base64"},
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                res = self.confirm(case)
+                self.assertEqual(res.status_code, 400)
+                self.assertEqual(res.data["token"], [INVALID_LINK])
+        self.assertEqual(self.login("OldPassword123!"), 200)
+
+    def test_ac6_weak_or_mismatched_password_is_rejected(self):
+        params = self.reset_link_params()
+        cases = [("123", None, "new_password"), ("noa", None, "new_password"),
+                 ("NewPassword456!", "Different456!", "new_password_confirm")]
+        for password, confirm, field in cases:
+            with self.subTest(password=password):
+                res = self.confirm(params, password=password, confirm=confirm)
+                self.assertEqual(res.status_code, 400)
+                self.assertIn(field, res.data)
+        self.assertEqual(self.login("OldPassword123!"), 200)

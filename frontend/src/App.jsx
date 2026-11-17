@@ -3,6 +3,7 @@ import { apiFetch, clearStoredAuth, getStoredToken } from "./api";
 import AuthPage from "./components/AuthPage";
 import LandingPage from "./components/LandingPage";
 import OwnerDashboard from "./components/OwnerDashboard";
+import ResetPasswordPage from "./components/ResetPasswordPage";
 import ThreeLayerShell from "./components/ThreeLayerShell";
 import VetDashboard from "./components/VetDashboard";
 
@@ -10,7 +11,14 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [unauthView, setUnauthView] = useState("landing"); // "landing" | "auth"
-  const [authMode, setAuthMode] = useState("login"); // "login" | "register"
+  const [authMode, setAuthMode] = useState("login"); // "login" | "register" | "forgot"
+  const [authNotice, setAuthNotice] = useState("");
+  // US-22: the emailed reset link opens /reset-password?uid=…&token=… (no router; read once on load)
+  const [resetLink, setResetLink] = useState(() =>
+    window.location.pathname === "/reset-password"
+      ? Object.fromEntries(new URLSearchParams(window.location.search))
+      : null
+  );
 
   useEffect(() => {
     const token = getStoredToken();
@@ -28,6 +36,30 @@ export default function App() {
       })
       .finally(() => setCheckingAuth(false));
   }, []);
+
+  function leaveResetPage(mode, notice = "") {
+    window.history.replaceState(null, "", "/"); // drop the token from the address bar and history
+    setResetLink(null);
+    setAuthMode(mode);
+    setAuthNotice(notice);
+    setUnauthView("auth");
+  }
+
+  if (resetLink) {
+    return (
+      <ResetPasswordPage
+        uid={resetLink.uid}
+        token={resetLink.token}
+        onDone={() => {
+          clearStoredAuth(); // the old password's session shouldn't carry on in this browser
+          setUser(null);
+          leaveResetPage("login", "Password updated. Sign in with your new password.");
+        }}
+        onRequestNewLink={() => leaveResetPage("forgot")}
+        onBackToSignIn={() => leaveResetPage("login")}
+      />
+    );
+  }
 
   if (checkingAuth) {
     return (
@@ -55,6 +87,7 @@ export default function App() {
     return (
       <AuthPage
         initialMode={authMode}
+        notice={authNotice}
         onBackToLanding={() => setUnauthView("landing")}
         onAuthSuccess={(loggedInUser) => setUser(loggedInUser)}
       />

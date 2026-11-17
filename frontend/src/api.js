@@ -45,7 +45,9 @@ export async function apiFetch(endpoint, options = {}) {
         .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
         .join(" | ") ||
       "Request failed.";
-    throw new Error(message);
+    const error = new Error(message);
+    error.fields = data; // per-field messages, for forms that show them under each input
+    throw error;
   }
   return data;
 }
