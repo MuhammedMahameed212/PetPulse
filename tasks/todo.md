@@ -92,12 +92,12 @@ Build: `cd frontend && npm run build`
 **Description:** Accept `photo` as multipart on POST and PATCH, and `remove_photo=true` on PATCH. Check type and size, then process it: exif_transpose → RGB → fit within 512 px → JPEG q82. Return `photo` as a data URL.
 
 **Acceptance criteria:**
-- [ ] A 2000 × 1500 PNG with EXIF data and transparency comes back as a JPEG data URL of at most 512 px with no EXIF
-- [ ] A file that isn't an image, or one over 5 MB, gets 400; `remove_photo=true` sets `photo` to null
-- [ ] JSON requests without a photo still work, unchanged
+- [x] A 2000 × 1500 PNG with EXIF data and transparency comes back as a JPEG data URL of at most 512 px with no EXIF
+- [x] A file that isn't an image, or one over 5 MB, gets 400; `remove_photo=true` sets `photo` to null
+- [x] JSON requests without a photo still work, unchanged
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/python backend/manage.py test pets`
+- [x] Tests pass: `.venv/bin/python backend/manage.py test pets`
 
 **Dependencies:** Task 3
 

@@ -47,7 +47,7 @@ CI test command (needs pets/tests.py to exist)
 - [x] By hand: open a pet → edit its weight → reload → the change is kept; delete one pet → the other remains
 
 ### Phase 3: Photos (AC2 complete)
-- [ ] Task 5: Photo upload and processing in the API, with tests
+- [x] Task 5: Photo upload and processing in the API, with tests
 - [ ] Task 6: Photo picker in the form; photo on the list and the pet page; FormData support in `apiFetch`
 
 ### Phase 4: Ship

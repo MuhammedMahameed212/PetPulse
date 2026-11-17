@@ -1,6 +1,10 @@
+import base64
+import io
 from datetime import date, timedelta
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from PIL import Image
 from rest_framework.test import APIClient
 
 from accounts.models import User
@@ -155,3 +159,81 @@ class US1EditAndDeletePetsTests(PetApiTestCase):
     def test_put_is_not_allowed(self):
         pet = self.create_pet(self.owner)
         self.assertEqual(self.client.put(detail_url(pet.pk), pet_payload(), format="json").status_code, 405)
+
+
+def image_file(name="photo.png", size=(2000, 1500), fmt="PNG", mode="RGBA", exif=None) -> SimpleUploadedFile:
+    buf = io.BytesIO()
+    img = Image.new(mode, size, (200, 120, 40, 128) if mode == "RGBA" else (200, 120, 40))
+    if exif is not None:
+        img.save(buf, fmt, exif=exif)
+    else:
+        img.save(buf, fmt)
+    return SimpleUploadedFile(name, buf.getvalue(), content_type=f"image/{fmt.lower()}")
+
+
+def decode_photo(data_url: str) -> Image.Image:
+    prefix = "data:image/jpeg;base64,"
+    assert data_url.startswith(prefix), data_url[:40]
+    return Image.open(io.BytesIO(base64.b64decode(data_url[len(prefix):])))
+
+
+def gps_exif() -> Image.Exif:
+    exif = Image.Exif()
+    exif[0x010F] = "PhoneMaker"  # Make
+    exif[0x8825] = {1: "N", 2: (32.0, 4.0, 0.0)}  # GPSInfo: the owner's location
+    return exif
+
+
+class US1PetPhotoTests(PetApiTestCase):
+    def test_ac2_photo_is_resized_reencoded_as_jpeg_and_stripped_of_exif(self):
+        res = self.client.post(LIST_URL, {**pet_payload(), "photo": image_file(exif=gps_exif())}, format="multipart")
+
+        self.assertEqual(res.status_code, 201, res.content)
+        img = decode_photo(res.json()["photo"])
+        self.assertEqual(img.format, "JPEG")
+        self.assertEqual(img.size, (512, 384))
+        self.assertEqual(dict(img.getexif()), {})
+
+    def test_phone_photo_is_turned_upright_before_exif_is_dropped(self):
+        exif = Image.Exif()
+        exif[0x0112] = 6  # Orientation: rotate 90° clockwise to display
+        res = self.client.post(
+            LIST_URL,
+            {**pet_payload(), "photo": image_file("phone.jpg", (400, 200), "JPEG", "RGB", exif)},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, 201, res.content)
+        self.assertEqual(decode_photo(res.json()["photo"]).size, (200, 400))
+
+    def test_patch_without_photo_keeps_it_and_remove_photo_clears_it(self):
+        pet_id = self.client.post(LIST_URL, {**pet_payload(), "photo": image_file()}, format="multipart").json()["id"]
+
+        res = self.client.patch(detail_url(pet_id), {"name": "Milo Jr"}, format="json")
+        self.assertIsNotNone(res.json()["photo"])
+
+        res = self.client.patch(detail_url(pet_id), {"remove_photo": "true"}, format="multipart")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertIsNone(res.json()["photo"])
+        self.assertIsNone(Pet.objects.get(pk=pet_id).photo)
+
+    def test_patch_replaces_photo(self):
+        pet = self.create_pet(self.owner)
+        res = self.client.patch(detail_url(pet.pk), {"photo": image_file(size=(300, 300))}, format="multipart")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(decode_photo(res.json()["photo"]).size, (300, 300))
+
+    def test_files_that_are_not_allowed_images_are_rejected(self):
+        gif = image_file("anim.gif", (50, 50), "GIF", "RGB")
+        fake = SimpleUploadedFile("cat.jpg", b"definitely not an image", content_type="image/jpeg")
+        huge = SimpleUploadedFile("big.jpg", b"0" * (5 * 1024 * 1024 + 1), content_type="image/jpeg")
+        for upload in (fake, huge, gif):
+            with self.subTest(upload=upload.name):
+                res = self.client.post(LIST_URL, {**pet_payload(), "photo": upload}, format="multipart")
+                self.assertEqual(res.status_code, 400)
+                self.assertIn("photo", res.json())
+        self.assertEqual(Pet.objects.count(), 0)
+
+    def test_photo_sent_as_text_is_rejected(self):
+        res = self.client.post(LIST_URL, pet_payload(photo="data:image/png;base64,AAAA"), format="json")
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("photo", res.json())
