@@ -33,7 +33,7 @@ export default function App() {
     return (
       <ThreeLayerShell variant="dashboard">
         <div className="layer-2-glass-stage" style={{ padding: "2rem", textAlign: "center" }}>
-          <div className="layer-3-card">Verifying session...</div>
+          <div className="layer-3-card">Checking your session…</div>
         </div>
       </ThreeLayerShell>
     );

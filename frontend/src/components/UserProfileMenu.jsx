@@ -48,7 +48,7 @@ export default function UserProfileMenu({ user, onLogout }) {
         <span className="profile-trigger-name">
           {user.first_name || user.username}
         </span>
-        <span className="profile-chevron">{open ? "▲" : "▼"}</span>
+        <span className="profile-chevron" aria-hidden="true" />
       </button>
 
       {open && (
@@ -64,7 +64,7 @@ export default function UserProfileMenu({ user, onLogout }) {
               }`}
               style={{ marginTop: "0.35rem" }}
             >
-              {user.role === "VETERINARIAN" ? "Veterinarian" : "Pet Owner"}
+              {user.role === "VETERINARIAN" ? "Veterinarian" : "Pet owner"}
             </span>
           </div>
 
@@ -75,8 +75,7 @@ export default function UserProfileMenu({ user, onLogout }) {
             className="logout-dropdown-btn"
             onClick={handleLogoutClick}
           >
-            <span>🚪</span>
-            <span>Log Out</span>
+            Log out
           </button>
         </div>
       )}
