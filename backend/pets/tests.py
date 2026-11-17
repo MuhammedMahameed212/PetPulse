@@ -237,3 +237,15 @@ class US1PetPhotoTests(PetApiTestCase):
         res = self.client.post(LIST_URL, pet_payload(photo="data:image/png;base64,AAAA"), format="json")
         self.assertEqual(res.status_code, 400)
         self.assertIn("photo", res.json())
+
+    def test_oversized_request_is_refused_before_the_body_is_read(self):
+        def big():  # a fresh file per request; an upload object is read to the end once sent
+            return SimpleUploadedFile("huge.jpg", b"0" * (7 * 1024 * 1024), content_type="image/jpeg")
+
+        pet = self.create_pet(self.owner)
+
+        res = self.client.post(LIST_URL, {**pet_payload(), "photo": big()}, format="multipart")
+        self.assertEqual(res.status_code, 413)
+        res = self.client.patch(detail_url(pet.pk), {"photo": big()}, format="multipart")
+        self.assertEqual(res.status_code, 413)
+        self.assertEqual(Pet.objects.count(), 1)
