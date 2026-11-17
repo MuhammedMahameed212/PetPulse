@@ -6,6 +6,8 @@ class Pet(models.Model):
     """PET-1 (US-1): a pet profile owned by one pet-owner account."""
 
     class Species(models.TextChoices):
+        """The species an owner can pick; anything else is "Other" plus a free-text breed."""
+
         DOG = "DOG", "Dog"
         CAT = "CAT", "Cat"
         BIRD = "BIRD", "Bird"
@@ -27,4 +29,5 @@ class Pet(models.Model):
         ordering = ["name", "id"]
 
     def __str__(self) -> str:
+        """How a pet appears in the admin, e.g. "Milo (Dog)"."""
         return f"{self.name} ({self.get_species_display()})"

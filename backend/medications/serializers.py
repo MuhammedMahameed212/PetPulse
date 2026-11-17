@@ -22,13 +22,17 @@ class DoseSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "scheduled_date", "given_at"]
 
     def get_given_by(self, dose: DoseLog) -> str:
+        """The name shown for who gave the dose: first name, else username."""
         user = dose.given_by
         return (user.first_name or user.username) if user else "A deleted account"
 
     def get_mine(self, dose: DoseLog) -> bool:
+        """True if the signed-in user gave this dose, so the screen shows Undo."""
         return dose.given_by_id == self.context["request"].user.id
 
     def validate(self, attrs):
+        """Allows a tick only if the medicine is active today and the time fits it:
+        one of its dose times for daily medicines, no time for as-needed ones."""
         med = self.context["medication"]
         time = attrs.get("scheduled_time")
         if not med.is_active_on(timezone.localdate()):
@@ -42,6 +46,8 @@ class DoseSerializer(serializers.ModelSerializer):
 
 
 class MedicationSerializer(serializers.ModelSerializer):
+    """Turns a medicine into JSON (with today's doses) and validates what the form sends."""
+
     dose_times = serializers.ListField(child=serializers.CharField(), required=False)
     is_active = serializers.SerializerMethodField()
     today = serializers.SerializerMethodField()
@@ -55,6 +61,7 @@ class MedicationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_is_active(self, med: Medication) -> bool:
+        """Whether the course covers today (shown as "Not active today" when false)."""
         return med.is_active_on(timezone.localdate())
 
     def get_today(self, med: Medication) -> list[dict]:
@@ -68,6 +75,8 @@ class MedicationSerializer(serializers.ModelSerializer):
         return [{"time": t, "dose": given.get(t)} for t in sorted(times)]
 
     def validate(self, attrs):
+        """Checks the schedule (as-needed has no times; daily has 1–6 valid, different times)
+        and that the end date isn't before the start date."""
         if self.value_after_save(attrs, "frequency") == Medication.Frequency.AS_NEEDED:
             if attrs.get("dose_times"):
                 raise serializers.ValidationError({"dose_times": "As-needed medicines have no dose times."})
@@ -86,6 +95,7 @@ class MedicationSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def clean_dose_times(times: list[str]) -> list[str]:
+        """Checks the daily dose times (1–6, format HH:MM, no duplicates) and returns them sorted."""
         if not 1 <= len(times) <= MAX_DOSE_TIMES:
             raise serializers.ValidationError({"dose_times": f"Add between 1 and {MAX_DOSE_TIMES} dose times."})
         if any(not TIME_RE.match(t) for t in times):

@@ -31,6 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "role", "dashboard_route"]
 
     def get_dashboard_route(self, obj: User) -> str:
+        """Tells the frontend which dashboard to open: vets go to /vet-dashboard, everyone else to /owner-dashboard."""
         if obj.role == User.Role.VETERINARIAN:
             return "/vet-dashboard"
         return "/owner-dashboard"
@@ -64,6 +65,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        """Checks that both passwords match and that veterinarians gave a license number."""
         if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError(
                 {"password_confirm": "Passwords do not match."}
@@ -78,6 +80,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        """Creates the user with a hashed password (never stored as plain text)."""
         validated_data.pop("password_confirm")
         password = validated_data.pop("password")
         user = User(**validated_data)
@@ -101,6 +104,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        """Accepts the new password only if the reset link is valid and unused, both passwords match,
+        and the password passes Django's strength rules."""
         try:
             user = User.objects.get(pk=urlsafe_base64_decode(attrs["uid"]).decode())
         except (ValueError, TypeError, OverflowError, User.DoesNotExist):
@@ -117,6 +122,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return attrs
 
     def save(self, **kwargs):
+        """Saves the new password; this also makes the reset link stop working."""
         user = self.validated_data["user"]  # type: ignore[index]
         user.set_password(self.validated_data["new_password"])  # type: ignore[index]
         user.save()  # the new password hash also invalidates the reset link
@@ -138,12 +144,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(write_only=True, required=True)
 
     def validate_current_password(self, value):
+        """Refuses the change unless the user typed their current password correctly."""
         user = self.context["request"].user
         if not user.check_password(value):
             raise serializers.ValidationError("Current password is incorrect.")
         return value
 
     def validate(self, attrs):
+        """Checks that both new passwords match and that the new one differs from the current one."""
         if attrs["new_password"] != attrs["new_password_confirm"]:
             raise serializers.ValidationError(
                 {"new_password_confirm": "New passwords do not match."}

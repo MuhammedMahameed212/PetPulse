@@ -8,6 +8,8 @@ class Medication(models.Model):
     """PET-4 (US-4): a medicine in a pet's medical file, given daily at set times or as needed."""
 
     class Frequency(models.TextChoices):
+        """How often a medicine is given: daily at set times, or as needed."""
+
         DAILY = "DAILY", "Daily at set times"
         AS_NEEDED = "AS_NEEDED", "As needed"
 
@@ -29,9 +31,11 @@ class Medication(models.Model):
         ordering = ["name", "id"]
 
     def __str__(self) -> str:
+        """How a medicine appears in the admin, e.g. "Carprofen (Milo (Dog))"."""
         return f"{self.name} ({self.pet})"
 
     def is_active_on(self, day: date) -> bool:
+        """True if the course covers this day: started already, and not ended yet (no end date = ongoing)."""
         return self.start_date <= day and (self.end_date is None or day <= self.end_date)
 
 
@@ -55,4 +59,5 @@ class DoseLog(models.Model):
         ]
 
     def __str__(self) -> str:
+        """How a dose appears in the admin, e.g. "Carprofen on 2026-11-17 08:00:00"."""
         return f"{self.medication.name} on {self.scheduled_date} {self.scheduled_time or ''}".strip()

@@ -21,12 +21,14 @@ class MedicationViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_pet(self):
+        """Loads the pet from the URL once per request; a pet the user can't access answers 404."""
         if not hasattr(self, "_pet"):
             # A pet the caller can't access answers 404, as in the pets API.
             self._pet = get_object_or_404(accessible_pets(self.request.user), pk=self.kwargs["pet_id"])
         return self._pet
 
     def get_queryset(self):
+        """The pet's medicines: active ones first, then by name, with today's doses loaded in one extra query."""
         today = timezone.localdate()
         todays_doses = DoseLog.objects.filter(scheduled_date=today).select_related("given_by")
         return (
@@ -37,6 +39,7 @@ class MedicationViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        """Saves a new medicine to the pet from the URL, recording who added it."""
         serializer.save(pet=self.get_pet(), created_by=self.request.user)
 
     @action(detail=True, methods=["post"], url_path="doses")

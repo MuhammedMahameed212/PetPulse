@@ -9,4 +9,5 @@ class IsPetOwner(permissions.BasePermission):
     message = "Only pet owner accounts can manage pets."
 
     def has_permission(self, request, view) -> bool:
+        """Lets the request through only for pet-owner accounts."""
         return getattr(request.user, "role", None) == User.Role.PET_OWNER

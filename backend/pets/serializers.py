@@ -49,13 +49,17 @@ class PhotoField(serializers.Field):
     """
 
     def to_internal_value(self, data) -> bytes:
+        """Turns an uploaded file into small JPEG bytes (see process_photo)."""
         return process_photo(data)
 
     def to_representation(self, value) -> str:
+        """Turns the stored JPEG bytes into a data URL an <img> tag can show directly."""
         return "data:image/jpeg;base64," + base64.b64encode(bytes(value)).decode("ascii")
 
 
 class PetSerializer(serializers.ModelSerializer):
+    """Turns a pet into JSON and validates the add/edit form, including the optional photo."""
+
     photo = PhotoField(required=False)
     remove_photo = serializers.BooleanField(write_only=True, required=False, default=False)
 
@@ -68,11 +72,13 @@ class PetSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def save(self, **kwargs):
+        """Handles the "remove photo" checkbox by clearing the stored photo."""
         if self.validated_data.pop("remove_photo", False):
             kwargs["photo"] = None
         return super().save(**kwargs)
 
     def validate_birth_date(self, value: date) -> date:
+        """Refuses birth dates in the future or more than 50 years ago."""
         today = date.today()
         if value > today:
             raise serializers.ValidationError("Birth date can't be in the future.")
@@ -81,6 +87,7 @@ class PetSerializer(serializers.ModelSerializer):
         return value
 
     def validate_weight_kg(self, value: Decimal) -> Decimal:
+        """Refuses weights of 0 or less, or over 200 kg."""
         if not Decimal("0") < value <= Decimal("200"):
             raise serializers.ValidationError("Weight must be more than 0 and at most 200 kg.")
         return value

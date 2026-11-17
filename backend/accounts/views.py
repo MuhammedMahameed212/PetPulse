@@ -23,6 +23,7 @@ from .serializers import (
 
 
 def get_tokens_for_user(user: User) -> dict[str, str]:
+    """Creates a JWT pair for a user: a short-lived access token for API calls and a refresh token."""
     refresh = RefreshToken.for_user(user)
     return {
         "refresh": str(refresh),
@@ -40,6 +41,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
+        """Creates the account and answers with the user's details and their sign-in tokens."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -61,6 +63,8 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        """Signs a user in by username or email (any letter case); answers 401 on wrong details,
+        otherwise the user's details and tokens."""
         username_or_email = request.data.get("username") or request.data.get("email")
         password = request.data.get("password")
 
@@ -105,6 +109,7 @@ class CurrentUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        """Returns the signed-in user; the frontend calls it on load to check the saved token."""
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
 
 
@@ -116,6 +121,7 @@ class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        """Ends the server-side session; the frontend also deletes its stored tokens."""
         logout(request)
         return Response(
             {"detail": "Logged out successfully."},
@@ -131,6 +137,7 @@ class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        """Validates the request and saves the user's new password."""
         serializer = ChangePasswordSerializer(
             data=request.data, context={"request": request}
         )
@@ -175,6 +182,8 @@ class PasswordResetRequestView(APIView):
     throttle_scope = "password_reset"
 
     def post(self, request):
+        """Emails a reset link to every active account with that email, then gives the same answer
+        whether or not one exists."""
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]  # type: ignore[index]
@@ -184,6 +193,7 @@ class PasswordResetRequestView(APIView):
         return Response({"detail": "If an account uses that email, we've sent a reset link."})
 
     def throttled(self, request, wait):
+        """Replaces DRF's default "request was throttled" text with a friendlier message."""
         raise exceptions.Throttled(wait, detail="Too many reset requests. Try again later.")
 
 
@@ -193,6 +203,7 @@ class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        """Checks the link and the new password, then saves it."""
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
