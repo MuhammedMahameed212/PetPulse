@@ -9,13 +9,13 @@ Build: `cd frontend && npm run build`
 **Description:** Create the `pets` app with the `Pet` model from the spec, its migration, an admin entry, `PetSerializer` (every validation rule except the photo), `IsPetOwner`, and `PetViewSet` limited to GET and POST at `/api/pets/`. Write the tests first.
 
 **Acceptance criteria:**
-- [ ] `POST /api/pets/` creates a pet owned by the caller; an `owner` sent in the body is ignored. Returns 201 with the spec's response shape (`photo: null`)
-- [ ] `GET /api/pets/` returns only the caller's pets, sorted by name; `GET /api/pets/<id>/` returns 404 for another owner's pet
-- [ ] A vet gets 403 and an anonymous caller gets 401; invalid input gets 400 (future or more than 50-year-old birth date, weight ≤ 0 or > 200, blank name, unknown species)
+- [x] `POST /api/pets/` creates a pet owned by the caller; an `owner` sent in the body is ignored. Returns 201 with the spec's response shape (`photo: null`)
+- [x] `GET /api/pets/` returns only the caller's pets, sorted by name; `GET /api/pets/<id>/` returns 404 for another owner's pet
+- [x] A vet gets 403 and an anonymous caller gets 401; invalid input gets 400 (future or more than 50-year-old birth date, weight ≤ 0 or > 200, blank name, unknown species)
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/python backend/manage.py test pets accounts petpulse_core`
-- [ ] `.venv/bin/python backend/manage.py makemigrations --check --dry-run` is clean
+- [x] Tests pass: `.venv/bin/python backend/manage.py test pets accounts petpulse_core`
+- [x] `.venv/bin/python backend/manage.py makemigrations --check --dry-run` is clean
 
 **Dependencies:** None
 

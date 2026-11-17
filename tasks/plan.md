@@ -31,7 +31,7 @@ CI test command (needs pets/tests.py to exist)
 ## Task List
 
 ### Phase 1: Add and list pets (AC1, AC2 without the photo, AC4, AC5)
-- [ ] Task 1: Pet model and create/list/retrieve API, with tests
+- [x] Task 1: Pet model and create/list/retrieve API, with tests
 - [ ] Task 2: "My pets" list and "Add a pet" form on the owner dashboard
 
 ### Checkpoint A
