@@ -110,13 +110,13 @@ Build: `cd frontend && npm run build`
 **Description:** `apiFetch` skips `Content-Type` when the body is a `FormData`. `PetForm` gets a photo picker with a preview and "Remove photo", and sends FormData only when a photo was picked or removed. The list and pet page show the photo, or fall back to the species initial.
 
 **Acceptance criteria:**
-- [ ] Picking a photo shows a preview before saving; after saving, the photo appears in the list and on the pet page
-- [ ] "Remove photo" brings back the species initial; editing other fields keeps the existing photo
-- [ ] Existing JSON calls (login, register, change password) still work
+- [x] Picking a photo shows a preview before saving; after saving, the photo appears in the list and on the pet page
+- [x] "Remove photo" brings back the species initial; editing other fields keeps the existing photo
+- [x] Existing JSON calls (login, register, change password) still work
 
 **Verification:**
-- [ ] Build passes; backend tests pass
-- [ ] By hand (screenshots): upload a phone photo → shown upright and sharp; remove it; sign in still works
+- [x] Build passes; backend tests pass
+- [x] By hand (screenshots): upload a phone photo → shown upright and sharp; remove it; sign in still works
 
 **Dependencies:** Tasks 4 and 5
 

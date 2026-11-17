@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api";
-import { SPECIES } from "./PetList";
+import { PetAvatar, SPECIES } from "./PetList";
+
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // same limit as the API
 
 const EMPTY = { name: "", species: "DOG", breed: "", birth_date: "", birth_date_is_estimate: false, weight_kg: "" };
 
@@ -16,6 +18,48 @@ export default function PetForm({ pet, onSaved, onCancel }) {
   );
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoRemoved, setPhotoRemoved] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    if (!photoFile) return setPreviewUrl(null);
+    const url = URL.createObjectURL(photoFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photoFile]);
+
+  const shownPhoto = previewUrl || (!photoRemoved && pet?.photo) || null;
+
+  function pickPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > MAX_PHOTO_BYTES) {
+      setError("Photo must be 5 MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+    setError("");
+    setPhotoFile(file);
+    setPhotoRemoved(false);
+  }
+
+  function removePhoto() {
+    setPhotoFile(null);
+    setPhotoRemoved(true);
+    fileRef.current.value = "";
+  }
+
+  function requestBody() {
+    // JSON unless the photo changed; then multipart so the file can travel with the fields.
+    if (!photoFile && !(pet && photoRemoved)) return JSON.stringify(form);
+    const body = new FormData();
+    Object.entries(form).forEach(([key, value]) => body.append(key, String(value)));
+    if (photoFile) body.append("photo", photoFile);
+    else body.append("remove_photo", "true");
+    return body;
+  }
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
@@ -27,7 +71,7 @@ export default function PetForm({ pet, onSaved, onCancel }) {
     try {
       const saved = await apiFetch(pet ? `/pets/${pet.id}/` : "/pets/", {
         method: pet ? "PATCH" : "POST",
-        body: JSON.stringify(form),
+        body: requestBody(),
       });
       onSaved(saved);
     } catch (err) {
@@ -40,6 +84,29 @@ export default function PetForm({ pet, onSaved, onCancel }) {
     <form className="layer-3-card pet-form" onSubmit={handleSubmit}>
       <h2 className="welcome-heading">{pet ? `Edit ${pet.name}` : "Add a pet"}</h2>
       {error && <div className="error-alert" role="alert">{error}</div>}
+
+      <div className="photo-row">
+        <PetAvatar pet={{ name: form.name || "?", species: form.species, photo: shownPhoto }} size="lg" />
+        <div className="photo-actions">
+          <input
+            id="pet-photo"
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="visually-hidden"
+            onChange={pickPhoto}
+          />
+          <label htmlFor="pet-photo" className="btn-line btn-small">
+            {shownPhoto ? "Change photo" : "Add a photo"}
+          </label>
+          {shownPhoto && (
+            <button type="button" className="btn-line btn-line-danger btn-small" onClick={removePhoto}>
+              Remove photo
+            </button>
+          )}
+          <p className="field-hint">Optional. JPEG, PNG or WebP, up to 5 MB.</p>
+        </div>
+      </div>
 
       <label htmlFor="pet-name">Name</label>
       <input id="pet-name" className="layer-3-input" value={form.name} onChange={set("name")} maxLength={60} required />

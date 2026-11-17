@@ -753,6 +753,46 @@ select.layer-3-input {
   line-height: 1.5;
 }
 
+.photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.photo-actions label.btn-line {
+  display: inline-block;
+  margin: 0;
+}
+.btn-small {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+.photo-actions .visually-hidden:focus-visible + label {
+  outline: 3px solid var(--cobalt);
+  outline-offset: 3px;
+}
+.field-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ---------- Small screens ---------- */
 @media (max-width: 768px) {
   .scene-3d-viewport {

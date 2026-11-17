@@ -48,7 +48,7 @@ CI test command (needs pets/tests.py to exist)
 
 ### Phase 3: Photos (AC2 complete)
 - [x] Task 5: Photo upload and processing in the API, with tests
-- [ ] Task 6: Photo picker in the form; photo on the list and the pet page; FormData support in `apiFetch`
+- [x] Task 6: Photo picker in the form; photo on the list and the pet page; FormData support in `apiFetch`
 
 ### Phase 4: Ship
 - [ ] Task 7: Add `pets` to CI; responsive and accessibility pass; update the project notes
