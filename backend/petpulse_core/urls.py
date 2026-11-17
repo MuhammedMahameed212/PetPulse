@@ -74,5 +74,6 @@ urlpatterns = [
     path("api/health/", health_check, name="api-health"),
     path("api/metrics/", system_metrics, name="api-metrics"),
     path("api/auth/", include("accounts.urls")),
+    path("api/pets/", include("pets.urls")),
     re_path(r"^(?!api/|admin/|static/|media/).*$", serve_react_app, name="spa-entry"),
 ]

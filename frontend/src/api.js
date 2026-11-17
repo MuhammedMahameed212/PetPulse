@@ -25,7 +25,8 @@ export function clearStoredAuth() {
 export async function apiFetch(endpoint, options = {}) {
   const token = getStoredToken();
   const headers = {
-    "Content-Type": "application/json",
+    // FormData needs the browser to set multipart/form-data with its boundary.
+    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
   };
   if (token) {
