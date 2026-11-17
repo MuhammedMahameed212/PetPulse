@@ -15,6 +15,10 @@ Before cloning the project, make sure you have these 3 tools installed on your c
 
 ---
 
+
+
+
+
 ## 🚀 First-Time Setup (After Cloning from GitHub)
 
 ### 1. Clone the Repository
@@ -55,6 +59,12 @@ python -m venv .venv
 .venv\Scripts\python backend/manage.py runserver
 ``
 .venv/bin/python backend/manage.py runserver
+
+
+.venv/bin/python backend/manage.py runserver
+
+cd frontend
+npm run dev
 
 ### 3. Set Up the Frontend (React + Vite)
 

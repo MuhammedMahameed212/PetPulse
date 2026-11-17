@@ -1,19 +1,18 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, logout
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer, UserSerializer
+from .models import User
+from .serializers import ChangePasswordSerializer, RegisterSerializer, UserSerializer
 
-User = get_user_model()
 
-
-def get_tokens_for_user(user: User) -> dict:
+def get_tokens_for_user(user: User) -> dict[str, str]:
     refresh = RefreshToken.for_user(user)
     return {
         "refresh": str(refresh),
-        "access": str(refresh.access_token),
+        "access": str(getattr(refresh, "access_token", "")),
     }
 
 
@@ -68,7 +67,7 @@ class LoginView(APIView):
                 request, username=user_obj.username, password=password
             )
 
-        if not user:
+        if not isinstance(user, User):
             return Response(
                 {"detail": "Invalid login credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -93,3 +92,39 @@ class CurrentUserView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    US-23 (Criteria 5 & 6): Log out the authenticated user at any time.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        logout(request)
+        return Response(
+            {"detail": "Logged out successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ChangePasswordView(APIView):
+    """
+    US-23 (Criteria 1–4): Change password from the user's personal account area.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        validated = dict(serializer.validated_data)  # type: ignore[arg-type]
+        request.user.set_password(validated["new_password"])
+        request.user.save()
+        return Response(
+            {"detail": "Password updated successfully."},
+            status=status.HTTP_200_OK,
+        )
