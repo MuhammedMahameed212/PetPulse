@@ -35,7 +35,7 @@ export default function ChangePasswordCard() {
         new_password_confirm: "",
       });
       setSuccessMsg(
-        "Password updated successfully! Your new password will be used on your next login."
+        "Password changed. Use the new one next time you sign in."
       );
     } catch (err) {
       setError(err.message);
@@ -46,18 +46,16 @@ export default function ChangePasswordCard() {
 
   return (
     <div className="layer-3-card interactive">
-      <span className="role-badge owner">Account Security (US-23)</span>
-      <h2 className="welcome-heading">Change Password 🔑</h2>
+      <h2 className="welcome-heading">Change password</h2>
       <p className="welcome-body">
-        Enter your current password and choose a strong new password (at least 8
-        characters, not purely numeric or common).
+        Use at least 8 characters. Avoid common passwords and passwords made only of numbers.
       </p>
 
       {error && <div className="error-alert">{error}</div>}
       {successMsg && <div className="success-alert-3d">{successMsg}</div>}
 
       <form onSubmit={handleSubmit} style={{ maxWidth: "460px" }}>
-        <label>Current Password</label>
+        <label>Current password</label>
         <input
           type="password"
           className="layer-3-input"
@@ -67,7 +65,7 @@ export default function ChangePasswordCard() {
           required
         />
 
-        <label>New Password</label>
+        <label>New password</label>
         <input
           type="password"
           className="layer-3-input"
@@ -77,7 +75,7 @@ export default function ChangePasswordCard() {
           required
         />
 
-        <label>Confirm New Password</label>
+        <label>Confirm new password</label>
         <input
           type="password"
           className="layer-3-input"
@@ -88,7 +86,7 @@ export default function ChangePasswordCard() {
         />
 
         <button type="submit" className="btn-3d" disabled={loading}>
-          {loading ? "Updating Password..." : "Update Password →"}
+          {loading ? "Changing password…" : "Change password"}
         </button>
       </form>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ChangePasswordCard from "./ChangePasswordCard";
-import ThreeLayerShell from "./ThreeLayerShell";
+import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
 
 export default function VetDashboard({ user, onLogout }) {
@@ -13,7 +13,7 @@ export default function VetDashboard({ user, onLogout }) {
         {/* Desktop Sidebar / Mobile Sticky Top Header */}
         <aside className="layer-2-brand-panel adaptive-sidebar">
           <div className="sidebar-top-row">
-            <div className="brand-pill-3d">🩺 PetPulse Vet</div>
+            <div className="brand-mark"><PulseMark />PetPulse for vets</div>
             <span className="role-badge vet">Veterinarian</span>
           </div>
 
@@ -23,19 +23,19 @@ export default function VetDashboard({ user, onLogout }) {
               className={`side-nav-item ${activeTab === "home" ? "active" : ""}`}
               onClick={() => setActiveTab("home")}
             >
-              🏥 Clinic Overview
+              Clinic
             </button>
             <button
               type="button"
               className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => setActiveTab("settings")}
             >
-              ⚙️ Account Settings
+              Account settings
             </button>
           </nav>
 
           <div className="sidebar-footer">
-            Dr. {user.last_name || user.username} • {user.license_number || "Verified"}
+            Dr. {user.last_name || user.username}, license {user.license_number || "pending"}
           </div>
         </aside>
 
@@ -48,14 +48,14 @@ export default function VetDashboard({ user, onLogout }) {
           {activeTab === "home" ? (
             <div className="layer-3-card interactive">
               <span className="role-badge vet">
-                Veterinarian / Clinic Staff Portal (וטרינר)
+                Veterinarian (וטרינר)
               </span>
               <h2 className="welcome-heading">
-                Welcome, Dr. {user.first_name} {user.last_name || user.username}! 🩺
+                Hi, Dr. {user.last_name || user.username}.
               </h2>
               <p className="welcome-body">
-                You have been authenticated and routed to{" "}
-                <code>{user.dashboard_route}</code>.
+                Patient files and consultations arrive in a later release. Until then you can
+                check your clinic details below, or change your password in Account settings.
               </p>
 
               <div className="user-info-grid">
@@ -66,11 +66,11 @@ export default function VetDashboard({ user, onLogout }) {
                   </strong>
                 </div>
                 <div className="info-pill">
-                  <span className="info-label">License Number</span>
+                  <span className="info-label">License number</span>
                   <strong>{user.license_number || "—"}</strong>
                 </div>
                 <div className="info-pill">
-                  <span className="info-label">Clinic Name</span>
+                  <span className="info-label">Clinic</span>
                   <strong>{user.clinic_name || "Not specified"}</strong>
                 </div>
                 <div className="info-pill">
@@ -91,16 +91,14 @@ export default function VetDashboard({ user, onLogout }) {
             className={`mobile-tab-item ${activeTab === "home" ? "active" : ""}`}
             onClick={() => setActiveTab("home")}
           >
-            <span>🏥</span>
-            <span>Clinic Home</span>
+            <span>Clinic</span>
           </button>
           <button
             type="button"
             className={`mobile-tab-item ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            <span>⚙️</span>
-            <span>Account Settings</span>
+            <span>Settings</span>
           </button>
         </nav>
       </div>

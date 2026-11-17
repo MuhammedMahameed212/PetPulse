@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ChangePasswordCard from "./ChangePasswordCard";
-import ThreeLayerShell from "./ThreeLayerShell";
+import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
 
 export default function OwnerDashboard({ user, onLogout }) {
@@ -13,8 +13,8 @@ export default function OwnerDashboard({ user, onLogout }) {
         {/* Desktop Sidebar / Mobile Sticky Top Header */}
         <aside className="layer-2-brand-panel adaptive-sidebar">
           <div className="sidebar-top-row">
-            <div className="brand-pill-3d">🐾 PetPulse</div>
-            <span className="role-badge owner">Pet Owner</span>
+            <div className="brand-mark"><PulseMark />PetPulse</div>
+            <span className="role-badge owner">Pet owner</span>
           </div>
 
           <nav className="desktop-side-nav">
@@ -23,14 +23,14 @@ export default function OwnerDashboard({ user, onLogout }) {
               className={`side-nav-item ${activeTab === "home" ? "active" : ""}`}
               onClick={() => setActiveTab("home")}
             >
-              🏠 Home Overview
+              Home
             </button>
             <button
               type="button"
               className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => setActiveTab("settings")}
             >
-              ⚙️ Account Settings
+              Account settings
             </button>
           </nav>
 
@@ -47,18 +47,18 @@ export default function OwnerDashboard({ user, onLogout }) {
 
           {activeTab === "home" ? (
             <div className="layer-3-card interactive">
-              <span className="role-badge owner">Pet Owner Portal (בעל חיית מחמד)</span>
+              <span className="role-badge owner">Pet owner (בעל חיית מחמד)</span>
               <h2 className="welcome-heading">
-                Welcome, {user.first_name || user.username}! 🐾
+                Hi, {user.first_name || user.username}.
               </h2>
               <p className="welcome-body">
-                You have been authenticated and routed to{" "}
-                <code>{user.dashboard_route}</code>.
+                Pet profiles and medical files arrive in the next release. Until then you can
+                check your details below, or change your password in Account settings.
               </p>
 
               <div className="user-info-grid">
                 <div className="info-pill">
-                  <span className="info-label">Full Name</span>
+                  <span className="info-label">Name</span>
                   <strong>
                     {user.first_name} {user.last_name || "—"}
                   </strong>
@@ -89,7 +89,6 @@ export default function OwnerDashboard({ user, onLogout }) {
             className={`mobile-tab-item ${activeTab === "home" ? "active" : ""}`}
             onClick={() => setActiveTab("home")}
           >
-            <span>🏠</span>
             <span>Home</span>
           </button>
           <button
@@ -97,8 +96,7 @@ export default function OwnerDashboard({ user, onLogout }) {
             className={`mobile-tab-item ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
-            <span>⚙️</span>
-            <span>Account Settings</span>
+            <span>Settings</span>
           </button>
         </nav>
       </div>

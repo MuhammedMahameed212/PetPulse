@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { apiFetch, setStoredAuth } from "../api";
-import ThreeLayerShell from "./ThreeLayerShell";
+import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 
 export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackToLanding }) {
   const [mode, setMode] = useState(initialMode); // "login" | "register"
@@ -62,39 +62,27 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
         {/* Left / Top Brand Hero Panel */}
         <aside className="layer-2-brand-panel auth-hero-panel">
           <div>
-            <div className="brand-pill-3d">🐾 PetPulse</div>
+            <div className="brand-mark"><PulseMark />PetPulse</div>
             <h1 className="hero-title">
-              Smart Pet Care &amp; Veterinary Collaboration
+              {mode === "login" ? "Welcome back." : "One file for every pet, shared with your vet."}
             </h1>
             <p className="hero-subtitle">
-              Centralize your pet’s medical records, vaccinations, medications, and
-              veterinary care in one connected platform.
+              Vaccines, weights, medication and vet notes, kept up to date by you and
+              your clinic.
             </p>
 
             <div className="hero-feature-list">
               <div className="hero-feature-item">
-                <span className="feature-icon">📋</span>
-                <div>
-                  <strong>Digital Medical File</strong>
-                  <div className="feature-desc">
-                    Complete chronological history for every pet
-                  </div>
-                </div>
+                <strong>The whole history, in order</strong>
+                <div className="feature-desc">Every visit, lab result and dose for each pet.</div>
               </div>
 
               <div className="hero-feature-item">
-                <span className="feature-icon">🩺</span>
-                <div>
-                  <strong>Role-Based Portals</strong>
-                  <div className="feature-desc">
-                    Tailored views for Pet Owners &amp; Veterinarians
-                  </div>
-                </div>
+                <strong>Built for owners and vets</strong>
+                <div className="feature-desc">Each side sees the tools it needs.</div>
               </div>
             </div>
           </div>
-
-          <div className="hero-footer">US-15 • Registration &amp; Authentication</div>
         </aside>
 
         {/* Right Form Panel containing LAYER 3 Elevated 3D Card */}
@@ -106,7 +94,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                 className="back-to-home-btn"
                 onClick={onBackToLanding}
               >
-                ← Back to PetPulse Home
+                Back to home
               </button>
             )}
             <div className="mode-tabs-3d">
@@ -118,7 +106,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                   setError("");
                 }}
               >
-                Sign In
+                Sign in
               </button>
               <button
                 type="button"
@@ -128,7 +116,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                   setError("");
                 }}
               >
-                Create Account
+                Create account
               </button>
             </div>
 
@@ -137,17 +125,17 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
             <form onSubmit={handleSubmit}>
               {mode === "register" && (
                 <>
-                  <label>Select Account Role</label>
+                  <label>I am a</label>
                   <div className="role-selector-grid">
                     <button
                       type="button"
                       className={`role-tile-3d ${
                         formData.role === "PET_OWNER" ? "selected" : ""
                       }`}
+                      aria-pressed={formData.role === "PET_OWNER"}
                       onClick={() => updateField("role", "PET_OWNER")}
                     >
-                      <span className="role-icon">🐾</span>
-                      <strong>Pet Owner</strong>
+                      <strong>Pet owner</strong>
                       <span className="role-sub">בעל חיית מחמד</span>
                     </button>
 
@@ -156,9 +144,9 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                       className={`role-tile-3d ${
                         formData.role === "VETERINARIAN" ? "selected" : ""
                       }`}
+                      aria-pressed={formData.role === "VETERINARIAN"}
                       onClick={() => updateField("role", "VETERINARIAN")}
                     >
-                      <span className="role-icon">🩺</span>
                       <strong>Veterinarian</strong>
                       <span className="role-sub">וטרינר / צוות מרפאה</span>
                     </button>
@@ -166,7 +154,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
 
                   <div className="row-2">
                     <div>
-                      <label>First Name</label>
+                      <label>First name</label>
                       <input
                         className="layer-3-input"
                         value={formData.first_name}
@@ -176,7 +164,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                       />
                     </div>
                     <div>
-                      <label>Last Name</label>
+                      <label>Last name</label>
                       <input
                         className="layer-3-input"
                         value={formData.last_name}
@@ -187,7 +175,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                     </div>
                   </div>
 
-                  <label>Email Address</label>
+                  <label>Email</label>
                   <input
                     type="email"
                     className="layer-3-input"
@@ -197,7 +185,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                     required
                   />
 
-                  <label>Phone Number</label>
+                  <label>Phone (optional)</label>
                   <input
                     className="layer-3-input"
                     value={formData.phone_number}
@@ -208,7 +196,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                   {formData.role === "VETERINARIAN" && (
                     <div className="row-2">
                       <div>
-                        <label>Vet License Number *</label>
+                        <label>Vet license number</label>
                         <input
                           className="layer-3-input"
                           value={formData.license_number}
@@ -218,7 +206,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
                         />
                       </div>
                       <div>
-                        <label>Clinic Name</label>
+                        <label>Clinic name (optional)</label>
                         <input
                           className="layer-3-input"
                           value={formData.clinic_name}
@@ -252,7 +240,7 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
 
               {mode === "register" && (
                 <>
-                  <label>Confirm Password</label>
+                  <label>Confirm password</label>
                   <input
                     type="password"
                     className="layer-3-input"
@@ -266,10 +254,10 @@ export default function AuthPage({ onAuthSuccess, initialMode = "login", onBackT
 
               <button type="submit" className="btn-3d" disabled={loading}>
                 {loading
-                  ? "Please wait..."
+                  ? mode === "login" ? "Signing in…" : "Creating account…"
                   : mode === "login"
-                  ? "Sign In to PetPulse →"
-                  : "Create PetPulse Account →"}
+                  ? "Sign in"
+                  : "Create account"}
               </button>
             </form>
           </div>
