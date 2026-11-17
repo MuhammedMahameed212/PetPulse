@@ -129,13 +129,13 @@ Build: `cd frontend && npm run build`
 **Description:** Add `pets` to the CI test command. Do a responsive and accessibility pass on the pet screens: 390 px width, keyboard-only use, visible focus. Update `Claude.yml` (repository structure and completed work).
 
 **Acceptance criteria:**
-- [ ] The CI test step runs `petpulse_core accounts pets`
-- [ ] No horizontal scrolling at 390 px; every action can be reached with the keyboard
-- [ ] `Claude.yml` describes the `pets` app and its endpoints
+- [x] The CI test step runs `petpulse_core accounts pets`
+- [x] No horizontal scrolling at 390 px; every action can be reached with the keyboard
+- [x] `Claude.yml` describes the `pets` app and its endpoints
 
 **Verification:**
-- [ ] Full test run passes; build passes; `makemigrations --check` is clean
-- [ ] Screenshots of every pet screen at desktop and 390 px width
+- [x] Full test run passes; build passes; `makemigrations --check` is clean
+- [x] Screenshots of every pet screen at desktop and 390 px width
 
 **Dependencies:** Task 6
 
@@ -144,5 +144,5 @@ Build: `cd frontend && npm run build`
 **Estimated scope:** S
 
 ## Checkpoint: Complete
-- [ ] SPEC.md Success Criteria 1–8 all checked
+- [x] SPEC.md Success Criteria 1–8 all checked
 - [ ] Human review → commit `PET-1: …` on a feature branch

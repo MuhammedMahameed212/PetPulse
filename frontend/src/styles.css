@@ -774,7 +774,7 @@ select.layer-3-input {
   padding: 0.6rem 1rem;
   font-size: 0.9rem;
 }
-.photo-actions .visually-hidden:focus-visible + label {
+.photo-actions .visually-hidden:focus + label {
   outline: 3px solid var(--cobalt);
   outline-offset: 3px;
 }

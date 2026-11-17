@@ -53,16 +53,27 @@ repository_structure:
       urls.py: /api/auth/{register,login,logout,change-password,me}/
       admin.py: UserAdmin configuration
       tests.py: US-15 & US-23 registration, login, role routing, and token tests
+    pets/:
+      models.py: Pet (owner FK, name, species, breed, birth_date + is_estimate, weight_kg, photo as JPEG bytes)
+      serializers.py: PetSerializer validation + process_photo (JPEG/PNG/WebP ≤5 MB → upright, ≤512 px JPEG, EXIF stripped)
+      permissions.py: IsPetOwner (vets get 403)
+      views.py: PetViewSet, queryset scoped to request.user (other owners' pets → 404)
+      urls.py: /api/pets/ (GET, POST) and /api/pets/<id>/ (GET, PATCH, DELETE)
+      tests.py: PET-1 (US-1) create/list/edit/delete, isolation, roles, validation, photo tests
   frontend/:
     vite.config.js: Dev proxy (/api, /media -> 127.0.0.1:8000) + FIGMA env port handling
     src/App.jsx: Auth state check (/api/auth/me/) + Landing / Auth / Role Dashboard routing
-    src/api.js: Fetch wrapper & JWT token storage helpers
+    src/api.js: Fetch wrapper & JWT token storage helpers (sends FormData as multipart)
+    src/petAge.js: Pet age from a YYYY-MM-DD birth date (local date parts, no UTC shift)
     src/styles.css: Design tokens + auth/dashboard styles (landing-only styles in components/landing.css)
     src/components/:
       ThreeLayerShell.jsx: Page frame for auth + dashboards (centred sheet); also exports the PulseMark logo
       LandingPage.jsx: Landing page (3D collar tag + pet switcher, 3D record stack with scan demo, owner/vet toggle, roadmap)
       AuthPage.jsx: Sign-in & role-based registration form (Pet Owner vs Veterinarian)
-      OwnerDashboard.jsx: Pet Owner portal shell
+      OwnerDashboard.jsx: Pet Owner portal (My pets list / add / pet page / edit, Account settings)
+      PetList.jsx: Pet cards, empty state, PetAvatar, SPECIES labels
+      PetForm.jsx: Shared add/edit pet form with photo picker
+      PetProfile.jsx: Pet page (facts, edit, delete dialog, AC6 record entry points)
       VetDashboard.jsx: Veterinarian portal shell
       UserProfileMenu.jsx: Top-right profile dropdown menu
       ChangePasswordCard.jsx: Password update card
@@ -77,17 +88,20 @@ completed_work:
   - Jira Gantt timeline structured into 5 Milestone Epics (PET-24 to PET-28) wrapping PET-1 to PET-23
   - Figma Design code layer + FigJam screens flow diagram
   - Landing redesign (3D collar tag, 3D record stack) and unified sage/ink/cobalt theme across all screens
+  - Milestone 2:
+      - PET-1 (US-1): Pet profiles (create, list, edit, delete, photo). Spec in SPEC.md, plan in tasks/plan.md
 
 roadmap_milestones:
   - PET-24 (Milestone 1): Registration & Account Management (PET-15, PET-23 done; next -> PET-20 US-20 profile update, PET-22 US-22 account security)
-  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1, 17, 12, 2, 19, 3, 18, 4, 6, 5)
+  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1 done; PET-17, 12, 2, 19, 3, 18, 4, 6, 5)
   - PET-26 (Milestone 3): Sharing Pet Info, Access Control & Summary Export (PET-21, 16, 9)
   - PET-27 (Milestone 4): Veterinarian Collaboration & Consultations (PET-10, 11, 14)
   - PET-28 (Milestone 5): Medical Documents, AI OCR & Nearby Clinics/Parks Map (PET-7, 8, 13)
 
 instructions_for_claude:
   commands:
-    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts --verbosity=1"
+    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets --verbosity=1"
+    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets && .venv/bin/coverage report --rcfile=.coveragerc"
     backend_check: ".venv/bin/python backend/manage.py check"
     frontend_build: "cd frontend && npm run build"
     frontend_dev: "cd frontend && npm run dev"

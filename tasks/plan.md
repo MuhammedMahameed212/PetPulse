@@ -51,11 +51,11 @@ CI test command (needs pets/tests.py to exist)
 - [x] Task 6: Photo picker in the form; photo on the list and the pet page; FormData support in `apiFetch`
 
 ### Phase 4: Ship
-- [ ] Task 7: Add `pets` to CI; responsive and accessibility pass; update the project notes
+- [x] Task 7: Add `pets` to CI; responsive and accessibility pass; update the project notes
 
 ### Checkpoint: Complete
-- [ ] Every Success Criterion in SPEC.md (1–8) is checked
-- [ ] Screenshots at desktop and 390 px width are reviewed
+- [x] Every Success Criterion in SPEC.md (1–8) is checked
+- [x] Screenshots at desktop and 390 px width are reviewed
 - [ ] Ready for review and commit (`PET-1: …`)
 
 ## Risks and Mitigations

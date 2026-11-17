@@ -1,6 +1,6 @@
 # Spec: Pet Profiles (PET-1) — V1
 
-Status: approved (2026-11-17)
+Status: implemented (2026-11-17)
 
 ## Objective
 
