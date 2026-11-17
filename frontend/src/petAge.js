@@ -13,3 +13,11 @@ export function petAge(birthDate, isEstimate = false, today = new Date()) {
   if (!years) return plural(rest, "mo");
   return rest ? `${plural(years, "yr")} ${plural(rest, "mo")}` : plural(years, "yr");
 }
+
+/** Today as "YYYY-MM-DD" in the browser's time zone (toISOString would give the UTC day). */
+export function localToday(today = new Date()) {
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+}
+
+/** "YYYY-MM-DD" → "dd/mm/yyyy". */
+export const showDate = (iso) => iso.split("-").reverse().join("/");

@@ -1,7 +1,7 @@
 // Run with: npm test (Node's built-in test runner, no dependencies).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { petAge } from "./petAge.js";
+import { localToday, petAge, showDate } from "./petAge.js";
 
 const today = new Date(2026, 10, 17); // 17 Nov 2026, local time
 
@@ -28,4 +28,9 @@ test("under a month", () => {
 test("approximate dates round to years or months", () => {
   assert.equal(petAge("2023-01-01", true, today), "About 3 yrs");
   assert.equal(petAge("2026-05-01", true, today), "About 6 mos");
+});
+
+test("local date helpers", () => {
+  assert.equal(localToday(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
+  assert.equal(showDate("2026-01-05"), "05/01/2026");
 });

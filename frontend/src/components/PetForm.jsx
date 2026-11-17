@@ -1,15 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api";
+import { localToday } from "../petAge";
 import { PetAvatar, SPECIES } from "./PetList";
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // same limit as the API
 
 const EMPTY = { name: "", species: "DOG", breed: "", birth_date: "", birth_date_is_estimate: false, weight_kg: "" };
-
-function localToday() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
 
 /** Add-a-pet and edit-pet form. `pet` is null when adding. */
 export default function PetForm({ pet, onSaved, onCancel }) {

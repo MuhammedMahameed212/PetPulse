@@ -916,3 +916,171 @@ select.layer-3-input {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Medications (PET-4) ---------- */
+.med-section {
+  margin-top: 2rem;
+}
+.med-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.med-head .pet-records-title {
+  margin: 0;
+}
+.med-empty {
+  margin: 0;
+  color: var(--ink-2);
+}
+.med-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.med-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+.med-card-main {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.med-card-main strong {
+  font: 600 1.1rem var(--display);
+}
+.med-card-main span {
+  color: var(--ink);
+}
+.med-card-main small {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+.med-ended {
+  background: transparent;
+}
+.med-ended .med-card-main strong,
+.med-ended .med-card-main span {
+  color: var(--ink-2);
+}
+.med-inactive {
+  font-weight: 600;
+}
+.med-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.med-form {
+  padding: 1.25rem;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--sheet);
+}
+.med-form-title {
+  margin: 0 0 1rem;
+  font: 600 1.25rem var(--display);
+}
+.med-times {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+.med-times legend {
+  padding: 0;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.med-time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.med-time-row .layer-3-input {
+  width: 9rem;
+  margin: 0;
+}
+.med-today {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: var(--paper-2);
+}
+.med-today-title {
+  margin: 0 0 0.6rem;
+  font: 600 1.05rem var(--display);
+}
+.dose-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dose-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--rule);
+}
+.dose-row:first-child {
+  border-top: 0;
+}
+.dose-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dose-med {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.dose-given {
+  color: var(--ok);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.dose-log .dose-given {
+  font-size: 0.85rem;
+}
+.link-btn {
+  margin-left: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font: 600 0.85rem var(--body);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:hover {
+  color: var(--ink);
+}
+@media (max-width: 640px) {
+  .med-card {
+    flex-direction: column;
+  }
+  .dose-row {
+    grid-template-columns: 4.5rem 1fr;
+  }
+  .dose-row > :last-child {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+

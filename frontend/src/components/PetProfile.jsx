@@ -1,13 +1,13 @@
 import React, { useRef, useState } from "react";
 import { apiFetch } from "../api";
-import { petAge } from "../petAge";
+import { petAge, showDate } from "../petAge";
+import MedicationsPanel from "./MedicationsPanel";
 import { PetAvatar, SPECIES } from "./PetList";
 
 // AC6: the profile is the entry point to these records; each arrives in its own user story.
 const RECORDS = [
   ["Medical file", "Visits, diagnoses and lab results."],
   ["Treatments", "Flea, tick and worm treatments on a schedule."],
-  ["Medications", "Current medication and doses."],
   ["Documents", "Reports and certificates from the clinic."],
 ];
 
@@ -65,7 +65,7 @@ export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
         <div className="info-pill">
           <dt className="info-label">Birth date</dt>
           <dd>
-            {pet.birth_date.split("-").reverse().join("/")}
+            {showDate(pet.birth_date)}
             {pet.birth_date_is_estimate && " (approximate)"}
           </dd>
         </div>
@@ -75,7 +75,9 @@ export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
         </div>
       </dl>
 
-      <h3 className="pet-records-title">{pet.name}’s records</h3>
+      <MedicationsPanel pet={pet} />
+
+      <h3 className="pet-records-title">{pet.name}’s other records</h3>
       <ul className="pet-records">
         {RECORDS.map(([title, body]) => (
           <li key={title}>

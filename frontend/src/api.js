@@ -53,3 +53,7 @@ export async function apiFetch(endpoint, options = {}) {
   return data;
 }
 
+/** The server's error sentences without its field names (e.g. "dose_times:"), for messages shown to people. */
+export function errorText(err) {
+  return Object.values(err.fields || {}).flat().join(" ") || err.message;
+}

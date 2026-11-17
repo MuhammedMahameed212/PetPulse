@@ -1,6 +1,6 @@
 from rest_framework import exceptions, permissions, viewsets
 
-from .models import Pet
+from .access import accessible_pets
 from .permissions import IsPetOwner
 from .serializers import MAX_UPLOAD_BYTES, PetSerializer
 
@@ -28,7 +28,7 @@ class PetViewSet(viewsets.ModelViewSet):
             raise PayloadTooLarge()
 
     def get_queryset(self):
-        return Pet.objects.filter(owner=self.request.user)  # other owners' pets → 404
+        return accessible_pets(self.request.user)  # other owners' pets → 404
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

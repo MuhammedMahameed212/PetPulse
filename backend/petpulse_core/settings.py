@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     # PetPulse domain apps
     "accounts",
     "pets",
+    "medications",
 ]
 
 MIDDLEWARE = [
