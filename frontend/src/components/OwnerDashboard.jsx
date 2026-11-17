@@ -3,12 +3,14 @@ import { apiFetch } from "../api";
 import ChangePasswordCard from "./ChangePasswordCard";
 import PetForm from "./PetForm";
 import PetList from "./PetList";
+import PetProfile from "./PetProfile";
 import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
 
 export default function OwnerDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("pets"); // "pets" | "settings"
-  const [view, setView] = useState("list"); // "list" | "add"
+  const [view, setView] = useState("list"); // "list" | "add" | "pet" | "edit"
+  const [petId, setPetId] = useState(null);
   const [pets, setPets] = useState(null); // null while loading
   const [loadError, setLoadError] = useState("");
 
@@ -23,8 +25,20 @@ export default function OwnerDashboard({ user, onLogout }) {
     setView("list");
   }
 
+  const currentPet = pets?.find((p) => p.id === petId);
+
+  function openPet(id) {
+    setPetId(id);
+    setView("pet");
+  }
+
   function handleSaved(pet) {
     setPets((prev) => [...prev.filter((p) => p.id !== pet.id), pet].sort((a, b) => a.name.localeCompare(b.name)));
+    openPet(pet.id);
+  }
+
+  function handleDeleted(id) {
+    setPets((prev) => prev.filter((p) => p.id !== id));
     setView("list");
   }
 
@@ -67,6 +81,19 @@ export default function OwnerDashboard({ user, onLogout }) {
             <UserProfileMenu user={user} onLogout={onLogout} />
           </div>
 
+          {activeTab === "pets" && view === "pet" && currentPet && (
+            <PetProfile
+              pet={currentPet}
+              onBack={() => setView("list")}
+              onEdit={() => setView("edit")}
+              onDeleted={handleDeleted}
+            />
+          )}
+
+          {activeTab === "pets" && view === "edit" && currentPet && (
+            <PetForm pet={currentPet} onSaved={handleSaved} onCancel={() => setView("pet")} />
+          )}
+
           {activeTab === "pets" && view === "add" && (
             <PetForm pet={null} onSaved={handleSaved} onCancel={() => setView("list")} />
           )}
@@ -86,7 +113,7 @@ export default function OwnerDashboard({ user, onLogout }) {
               </div>
               {loadError && <div className="error-alert" role="alert">Couldn't load your pets: {loadError}</div>}
               {pets === null && !loadError && <p className="welcome-body">Loading your pets…</p>}
-              {pets && <PetList pets={pets} onAdd={() => setView("add")} />}
+              {pets && <PetList pets={pets} onAdd={() => setView("add")} onOpen={openPet} />}
             </div>
           )}
 

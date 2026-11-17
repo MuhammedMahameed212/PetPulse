@@ -40,11 +40,11 @@ CI test command (needs pets/tests.py to exist)
 
 ### Phase 2: Pet page, edit, delete (AC3, AC6)
 - [x] Task 3: Edit and delete API, with tests
-- [ ] Task 4: Pet page with Edit, Delete-with-confirmation and the four entry-point sections
+- [x] Task 4: Pet page with Edit, Delete-with-confirmation and the four entry-point sections
 
 ### Checkpoint B
-- [ ] Backend tests pass; the build passes
-- [ ] By hand: open a pet → edit its weight → reload → the change is kept; delete one pet → the other remains
+- [x] Backend tests pass; the build passes
+- [x] By hand: open a pet → edit its weight → reload → the change is kept; delete one pet → the other remains
 
 ### Phase 3: Photos (AC2 complete)
 - [ ] Task 5: Photo upload and processing in the API, with tests

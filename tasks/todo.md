@@ -69,13 +69,13 @@ Build: `cd frontend && npm run build`
 **Description:** Add `PetProfile`: a header with the name, species and breed, age ("about …" when the date is approximate) and weight; "Edit", which opens `PetForm` in edit mode; and "Delete", which opens a confirmation dialog naming the pet and returns to the list when done. Add the four entry-point sections from AC6 (Medical file, Treatments, Medications, Documents), each showing "Coming in a later release". Add a back link to "My pets".
 
 **Acceptance criteria:**
-- [ ] An edit is saved and visible after a reload; "Cancel" discards it
-- [ ] Delete asks first (focus moves into the dialog, Escape cancels); after confirming, the pet is gone from the list
-- [ ] The four entry-point sections appear on every pet page
+- [x] An edit is saved and visible after a reload; "Cancel" discards it
+- [x] Delete asks first (focus moves into the dialog, Escape cancels); after confirming, the pet is gone from the list
+- [x] The four entry-point sections appear on every pet page
 
 **Verification:**
-- [ ] Build passes
-- [ ] By hand (screenshots): open Milo → edit weight → reload → kept; delete Luna → Milo remains
+- [x] Build passes
+- [x] By hand (screenshots): open Milo → edit weight → reload → kept; delete Luna → Milo remains
 
 **Dependencies:** Tasks 2 and 3
 
@@ -84,8 +84,8 @@ Build: `cd frontend && npm run build`
 **Estimated scope:** M
 
 ## Checkpoint B
-- [ ] All tests pass; the build passes
-- [ ] AC1–AC6 work end to end, except photos
+- [x] All tests pass; the build passes
+- [x] AC1–AC6 work end to end, except photos
 
 ## Task 5: Photo upload and processing in the API, with tests
 

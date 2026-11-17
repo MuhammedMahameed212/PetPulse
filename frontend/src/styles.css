@@ -654,6 +654,105 @@ select.layer-3-input {
   margin-top: 0.75rem;
 }
 
+.btn-line-danger {
+  color: var(--due);
+  border-color: var(--due-tint);
+}
+.btn-line-danger:hover {
+  background: var(--due-tint);
+  color: var(--due);
+}
+
+.pet-profile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+.pet-profile-title {
+  flex: 1;
+  min-width: 12rem;
+}
+.pet-profile-title .welcome-heading {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.pet-profile-title p {
+  margin: 0.25rem 0 0;
+  color: var(--ink-2);
+}
+.pet-profile-actions {
+  margin-top: 0;
+}
+.pet-profile-actions .btn-line {
+  padding: 0.65rem 1.1rem;
+  font-size: 0.95rem;
+}
+.pet-facts {
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+}
+.pet-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.pet-records-title {
+  margin: 2.25rem 0 0.9rem;
+  font-size: 1.4rem;
+}
+.pet-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+.pet-records li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border: 1.5px dashed var(--rule);
+  border-radius: 14px;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+.pet-records strong {
+  font: 560 1.15rem/1.2 var(--display);
+  font-variation-settings: "SOFT" 100;
+  color: var(--ink);
+}
+.pet-records small {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.pet-dialog {
+  max-width: min(440px, calc(100vw - 2rem));
+  padding: 1.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  color: var(--ink);
+  background: #fff;
+}
+.pet-dialog::backdrop {
+  background: rgba(19, 42, 37, 0.45);
+}
+.pet-dialog h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+.pet-dialog p {
+  margin: 0 0 1.25rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
 /* ---------- Small screens ---------- */
 @media (max-width: 768px) {
   .scene-3d-viewport {
@@ -700,7 +799,8 @@ select.layer-3-input {
   .layer-3-card {
     padding: 1.25rem;
   }
-  .user-info-grid {
+  .user-info-grid,
+  .pet-records {
     grid-template-columns: 1fr;
   }
 
