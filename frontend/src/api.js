@@ -25,7 +25,8 @@ export function clearStoredAuth() {
 export async function apiFetch(endpoint, options = {}) {
   const token = getStoredToken();
   const headers = {
-    "Content-Type": "application/json",
+    // FormData needs the browser to set multipart/form-data with its boundary.
+    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
   };
   if (token) {
@@ -45,8 +46,14 @@ export async function apiFetch(endpoint, options = {}) {
         .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
         .join(" | ") ||
       "Request failed.";
-    throw new Error(message);
+    const error = new Error(message);
+    error.fields = data; // per-field messages, for forms that show them under each input
+    throw error;
   }
   return data;
 }
 
+/** The server's error sentences without its field names (e.g. "dose_times:"), for messages shown to people. */
+export function errorText(err) {
+  return Object.values(err.fields || {}).flat().join(" ") || err.message;
+}

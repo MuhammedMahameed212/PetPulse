@@ -1,4 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 
 from .models import User
@@ -28,6 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "role", "dashboard_route"]
 
     def get_dashboard_route(self, obj: User) -> str:
+        """Tells the frontend which dashboard to open: vets go to /vet-dashboard, everyone else to /owner-dashboard."""
         if obj.role == User.Role.VETERINARIAN:
             return "/vet-dashboard"
         return "/owner-dashboard"
@@ -61,6 +65,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        """Checks that both passwords match and that veterinarians gave a license number."""
         if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError(
                 {"password_confirm": "Passwords do not match."}
@@ -75,11 +80,52 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        """Creates the user with a hashed password (never stored as plain text)."""
         validated_data.pop("password_confirm")
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)
         user.save()
+        return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """US-22 (AC2): the email address of the account to reset."""
+
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """US-22 (AC3, AC4, AC6): a new password, accepted only with a valid one-time reset link."""
+
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+    new_password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        """Accepts the new password only if the reset link is valid and unused, both passwords match,
+        and the password passes Django's strength rules."""
+        try:
+            user = User.objects.get(pk=urlsafe_base64_decode(attrs["uid"]).decode())
+        except (ValueError, TypeError, OverflowError, User.DoesNotExist):
+            user = None
+        if not (user and user.is_active and default_token_generator.check_token(user, attrs["token"])):
+            raise serializers.ValidationError({"token": "This reset link is invalid or has expired."})
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError({"new_password_confirm": "Passwords do not match."})
+        try:
+            validate_password(attrs["new_password"], user)  # with the user, so "noa" can't be noa's password
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"new_password": list(exc.messages)})
+        attrs["user"] = user
+        return attrs
+
+    def save(self, **kwargs):
+        """Saves the new password; this also makes the reset link stop working."""
+        user = self.validated_data["user"]  # type: ignore[index]
+        user.set_password(self.validated_data["new_password"])  # type: ignore[index]
+        user.save()  # the new password hash also invalidates the reset link
         return user
 
 
@@ -98,12 +144,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(write_only=True, required=True)
 
     def validate_current_password(self, value):
+        """Refuses the change unless the user typed their current password correctly."""
         user = self.context["request"].user
         if not user.check_password(value):
             raise serializers.ValidationError("Current password is incorrect.")
         return value
 
     def validate(self, attrs):
+        """Checks that both new passwords match and that the new one differs from the current one."""
         if attrs["new_password"] != attrs["new_password_confirm"]:
             raise serializers.ValidationError(
                 {"new_password_confirm": "New passwords do not match."}

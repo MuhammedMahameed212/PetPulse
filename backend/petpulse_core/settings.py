@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     "corsheaders",
     # PetPulse domain apps
     "accounts",
+    "pets",
+    "medications",
 ]
 
 MIDDLEWARE = [
@@ -157,6 +159,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_THROTTLE_RATES": {
+        "password_reset": "5/hour",  # US-22: per IP, on the "send reset link" endpoint
+    },
 }
 
 SIMPLE_JWT = {
@@ -165,6 +170,19 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# US-22: Password reset emails. The console backend prints them in the runserver terminal;
+# set EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend and the SMTP values in .env to really send.
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "25"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() in ("true", "1", "yes")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "PetPulse <no-reply@petpulse.local>")
+# Reset links point here, never to the request's Host header (which a client can forge).
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+PASSWORD_RESET_TIMEOUT = 60 * 60  # reset links expire after 1 hour
 
 # CORS Settings so React (http://localhost:5173) can talk to Django (http://127.0.0.1:8000) in local dev
 CORS_ALLOWED_ORIGINS = [

@@ -1,14 +1,29 @@
+from urllib.parse import urlencode
+
+from django.conf import settings
 from django.contrib.auth import authenticate, logout
-from rest_framework import generics, permissions, status
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework import exceptions, generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .serializers import ChangePasswordSerializer, RegisterSerializer, UserSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
 
 
 def get_tokens_for_user(user: User) -> dict[str, str]:
+    """Creates a JWT pair for a user: a short-lived access token for API calls and a refresh token."""
     refresh = RefreshToken.for_user(user)
     return {
         "refresh": str(refresh),
@@ -26,6 +41,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
+        """Creates the account and answers with the user's details and their sign-in tokens."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -47,6 +63,8 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        """Signs a user in by username or email (any letter case); answers 401 on wrong details,
+        otherwise the user's details and tokens."""
         username_or_email = request.data.get("username") or request.data.get("email")
         password = request.data.get("password")
 
@@ -91,6 +109,7 @@ class CurrentUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        """Returns the signed-in user; the frontend calls it on load to check the saved token."""
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
 
 
@@ -102,6 +121,7 @@ class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        """Ends the server-side session; the frontend also deletes its stored tokens."""
         logout(request)
         return Response(
             {"detail": "Logged out successfully."},
@@ -117,6 +137,7 @@ class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        """Validates the request and saves the user's new password."""
         serializer = ChangePasswordSerializer(
             data=request.data, context={"request": request}
         )
@@ -128,3 +149,62 @@ class ChangePasswordView(APIView):
             {"detail": "Password updated successfully."},
             status=status.HTTP_200_OK,
         )
+
+
+def send_password_reset_email(user: User) -> None:
+    """US-22 (AC3): email a one-time link; the token dies when the password changes or after 1 hour."""
+    query = urlencode({
+        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+        "token": default_token_generator.make_token(user),
+    })
+    link = f"{settings.FRONTEND_URL}/reset-password?{query}"
+    send_mail(
+        subject="Reset your PetPulse password",
+        message=(
+            f"Hi {user.username},\n\n"
+            f"Use this link to set a new password:\n{link}\n\n"
+            "The link works once and expires in 1 hour.\n"
+            "If you didn't ask for this, ignore this email; your password stays the same.\n"
+        ),
+        from_email=None,  # DEFAULT_FROM_EMAIL
+        recipient_list=[user.email],
+    )
+
+
+class PasswordResetRequestView(APIView):
+    """
+    US-22 (AC1–AC3): Send a reset link to the account's email.
+    The answer is the same whether or not the email is registered, so it can't be used to find accounts.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
+
+    def post(self, request):
+        """Emails a reset link to every active account with that email, then gives the same answer
+        whether or not one exists."""
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]  # type: ignore[index]
+        for user in User.objects.filter(email__iexact=email, is_active=True):
+            if user.has_usable_password():
+                send_password_reset_email(user)
+        return Response({"detail": "If an account uses that email, we've sent a reset link."})
+
+    def throttled(self, request, wait):
+        """Replaces DRF's default "request was throttled" text with a friendlier message."""
+        raise exceptions.Throttled(wait, detail="Too many reset requests. Try again later.")
+
+
+class PasswordResetConfirmView(APIView):
+    """US-22 (AC3–AC5): set a new password from a valid reset link."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        """Checks the link and the new password, then saves it."""
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Password updated."})

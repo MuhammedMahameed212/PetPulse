@@ -9,6 +9,8 @@ class User(AbstractUser):
     """
 
     class Role(models.TextChoices):
+        """The two kinds of account: pet owner or veterinarian / clinic staff."""
+
         PET_OWNER = "PET_OWNER", "Pet Owner (בעל חיית מחמד)"
         VETERINARIAN = "VETERINARIAN", "Veterinarian / Clinic Staff (וטרינר / צוות מרפאה)"
 
@@ -25,5 +27,6 @@ class User(AbstractUser):
     clinic_name = models.CharField(max_length=150, blank=True)
 
     def __str__(self) -> str:
+        """How a user appears in the admin and logs: the username and role, e.g. "noa (Pet Owner (בעל חיית מחמד))"."""
         role_label = self.Role(self.role).label if self.role in self.Role.values else self.role
         return f"{self.username} ({role_label})"

@@ -6,6 +6,8 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    """Admin screen for user accounts, showing each user's role and clinic fields."""
+
     list_display = ("username", "email", "first_name", "last_name", "role", "clinic_name", "is_staff")  # type: ignore
     list_filter = ("role", "is_staff", "is_active")  # type: ignore
     fieldsets = tuple(BaseUserAdmin.fieldsets or ()) + (  # type: ignore
