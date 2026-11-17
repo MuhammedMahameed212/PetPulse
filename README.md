@@ -15,6 +15,10 @@ Before cloning the project, make sure you have these 3 tools installed on your c
 
 ---
 
+
+
+
+
 ## 🚀 First-Time Setup (After Cloning from GitHub)
 
 ### 1. Clone the Repository
