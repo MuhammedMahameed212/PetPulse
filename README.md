@@ -30,6 +30,7 @@ App runs at `http://localhost:5173`.
 
 - `backend/` — Django REST Framework API
 - `frontend/` — React + Vite UI
+- `docs/` — one folder per user story (`PET-<n>-<name>/`): spec, plan and task list
 - `.github/` — CI/CD workflows and automation
 
 ## 🗺️ Roadmap
