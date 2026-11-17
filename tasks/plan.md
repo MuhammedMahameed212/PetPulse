@@ -32,11 +32,11 @@ CI test command (needs pets/tests.py to exist)
 
 ### Phase 1: Add and list pets (AC1, AC2 without the photo, AC4, AC5)
 - [x] Task 1: Pet model and create/list/retrieve API, with tests
-- [ ] Task 2: "My pets" list and "Add a pet" form on the owner dashboard
+- [x] Task 2: "My pets" list and "Add a pet" form on the owner dashboard
 
 ### Checkpoint A
-- [ ] Backend tests pass; the migration is committed; `makemigrations --check` is clean
-- [ ] By hand: sign in as an owner → add 2 pets → both appear in the list; a vet sees no pets screens
+- [x] Backend tests pass; the migration is committed; `makemigrations --check` is clean
+- [x] By hand: sign in as an owner → add 2 pets → both appear in the list; a vet sees no pets screens
 
 ### Phase 2: Pet page, edit, delete (AC3, AC6)
 - [ ] Task 3: Edit and delete API, with tests

@@ -1,10 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiFetch } from "../api";
 import ChangePasswordCard from "./ChangePasswordCard";
+import PetForm from "./PetForm";
+import PetList from "./PetList";
 import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
 
 export default function OwnerDashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState("home"); // "home" | "settings"
+  const [activeTab, setActiveTab] = useState("pets"); // "pets" | "settings"
+  const [view, setView] = useState("list"); // "list" | "add"
+  const [pets, setPets] = useState(null); // null while loading
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    apiFetch("/pets/")
+      .then(setPets)
+      .catch((err) => setLoadError(err.message));
+  }, []);
+
+  function openTab(tab) {
+    setActiveTab(tab);
+    setView("list");
+  }
+
+  function handleSaved(pet) {
+    setPets((prev) => [...prev.filter((p) => p.id !== pet.id), pet].sort((a, b) => a.name.localeCompare(b.name)));
+    setView("list");
+  }
 
   return (
     <ThreeLayerShell variant="dashboard">
@@ -20,15 +42,15 @@ export default function OwnerDashboard({ user, onLogout }) {
           <nav className="desktop-side-nav">
             <button
               type="button"
-              className={`side-nav-item ${activeTab === "home" ? "active" : ""}`}
-              onClick={() => setActiveTab("home")}
+              className={`side-nav-item ${activeTab === "pets" ? "active" : ""}`}
+              onClick={() => openTab("pets")}
             >
-              Home
+              My pets
             </button>
             <button
               type="button"
               className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
-              onClick={() => setActiveTab("settings")}
+              onClick={() => openTab("settings")}
             >
               Account settings
             </button>
@@ -45,40 +67,56 @@ export default function OwnerDashboard({ user, onLogout }) {
             <UserProfileMenu user={user} onLogout={onLogout} />
           </div>
 
-          {activeTab === "home" ? (
-            <div className="layer-3-card interactive">
-              <span className="role-badge owner">Pet owner (בעל חיית מחמד)</span>
-              <h2 className="welcome-heading">
-                Hi, {user.first_name || user.username}.
-              </h2>
-              <p className="welcome-body">
-                Pet profiles and medical files arrive in the next release. Until then you can
-                check your details below, or change your password in Account settings.
-              </p>
+          {activeTab === "pets" && view === "add" && (
+            <PetForm pet={null} onSaved={handleSaved} onCancel={() => setView("list")} />
+          )}
 
-              <div className="user-info-grid">
-                <div className="info-pill">
-                  <span className="info-label">Name</span>
-                  <strong>
-                    {user.first_name} {user.last_name || "—"}
-                  </strong>
+          {activeTab === "pets" && view === "list" && (
+            <div className="layer-3-card">
+              <div className="section-head">
+                <div>
+                  <h2 className="welcome-heading">Hi, {user.first_name || user.username}.</h2>
+                  <p className="welcome-body">Your pets, and everything about their health, in one place.</p>
                 </div>
-                <div className="info-pill">
-                  <span className="info-label">Username</span>
-                  <strong>@{user.username}</strong>
-                </div>
-                <div className="info-pill">
-                  <span className="info-label">Email</span>
-                  <strong>{user.email}</strong>
-                </div>
-                <div className="info-pill">
-                  <span className="info-label">Phone</span>
-                  <strong>{user.phone_number || "Not provided"}</strong>
+                {pets?.length > 0 && (
+                  <button type="button" className="btn-3d btn-inline" onClick={() => setView("add")}>
+                    Add a pet
+                  </button>
+                )}
+              </div>
+              {loadError && <div className="error-alert" role="alert">Couldn't load your pets: {loadError}</div>}
+              {pets === null && !loadError && <p className="welcome-body">Loading your pets…</p>}
+              {pets && <PetList pets={pets} onAdd={() => setView("add")} />}
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <>
+              <div className="layer-3-card">
+                <h2 className="welcome-heading">Your details</h2>
+                <div className="user-info-grid">
+                  <div className="info-pill">
+                    <span className="info-label">Name</span>
+                    <strong>
+                      {user.first_name} {user.last_name || "—"}
+                    </strong>
+                  </div>
+                  <div className="info-pill">
+                    <span className="info-label">Username</span>
+                    <strong>@{user.username}</strong>
+                  </div>
+                  <div className="info-pill">
+                    <span className="info-label">Email</span>
+                    <strong>{user.email}</strong>
+                  </div>
+                  <div className="info-pill">
+                    <span className="info-label">Phone</span>
+                    <strong>{user.phone_number || "Not provided"}</strong>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <ChangePasswordCard />
+              <ChangePasswordCard />
+            </>
           )}
         </section>
 
@@ -86,15 +124,15 @@ export default function OwnerDashboard({ user, onLogout }) {
         <nav className="mobile-bottom-bar">
           <button
             type="button"
-            className={`mobile-tab-item ${activeTab === "home" ? "active" : ""}`}
-            onClick={() => setActiveTab("home")}
+            className={`mobile-tab-item ${activeTab === "pets" ? "active" : ""}`}
+            onClick={() => openTab("pets")}
           >
-            <span>Home</span>
+            <span>My pets</span>
           </button>
           <button
             type="button"
             className={`mobile-tab-item ${activeTab === "settings" ? "active" : ""}`}
-            onClick={() => setActiveTab("settings")}
+            onClick={() => openTab("settings")}
           >
             <span>Settings</span>
           </button>

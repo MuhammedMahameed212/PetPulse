@@ -28,13 +28,13 @@ Build: `cd frontend && npm run build`
 **Description:** On `OwnerDashboard`, rename the "Home" tab to "My pets". It shows `PetList`: cards with a species initial in place of a photo, name, species and breed, and age; or an empty state when there are no pets. Add `PetForm` in add mode, without a photo field yet, and a small `petAge()` helper.
 
 **Acceptance criteria:**
-- [ ] Adding a pet through the form shows it in the list without reloading; server validation errors appear above the form
-- [ ] With no pets, the empty state explains what to do and offers "Add a pet"
-- [ ] Every input has a linked label (`htmlFor`/`id`); the form works at 390 px width
+- [x] Adding a pet through the form shows it in the list without reloading; server validation errors appear above the form
+- [x] With no pets, the empty state explains what to do and offers "Add a pet"
+- [x] Every input has a linked label (`htmlFor`/`id`); the form works at 390 px width
 
 **Verification:**
-- [ ] Build passes: `cd frontend && npm run build`
-- [ ] By hand (screenshots): empty state → add Milo and Luna → both listed, ages correct
+- [x] Build passes: `cd frontend && npm run build`
+- [x] By hand (screenshots): empty state → add Milo and Luna → both listed, ages correct
 
 **Dependencies:** Task 1
 
@@ -43,8 +43,8 @@ Build: `cd frontend && npm run build`
 **Estimated scope:** M
 
 ## Checkpoint A
-- [ ] All backend tests pass; the build passes
-- [ ] Owner adds 2 pets end to end; a vet account still lands on `VetDashboard` and gets 403 from `/api/pets/`
+- [x] All backend tests pass; the build passes
+- [x] Owner adds 2 pets end to end; a vet account still lands on `VetDashboard` and gets 403 from `/api/pets/`
 
 ## Task 3: Edit and delete API, with tests
 
