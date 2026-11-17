@@ -39,7 +39,7 @@ CI test command (needs pets/tests.py to exist)
 - [x] By hand: sign in as an owner → add 2 pets → both appear in the list; a vet sees no pets screens
 
 ### Phase 2: Pet page, edit, delete (AC3, AC6)
-- [ ] Task 3: Edit and delete API, with tests
+- [x] Task 3: Edit and delete API, with tests
 - [ ] Task 4: Pet page with Edit, Delete-with-confirmation and the four entry-point sections
 
 ### Checkpoint B

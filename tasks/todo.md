@@ -51,12 +51,12 @@ Build: `cd frontend && npm run build`
 **Description:** Allow PATCH and DELETE on `PetViewSet`.
 
 **Acceptance criteria:**
-- [ ] PATCH changes only the fields sent, with the same validation as create; returns 200
-- [ ] DELETE returns 204, and a later GET returns 404
-- [ ] Owner B gets 404 when they PATCH or DELETE owner A's pet; a vet gets 403
+- [x] PATCH changes only the fields sent, with the same validation as create; returns 200
+- [x] DELETE returns 204, and a later GET returns 404
+- [x] Owner B gets 404 when they PATCH or DELETE owner A's pet; a vet gets 403
 
 **Verification:**
-- [ ] Tests pass: `.venv/bin/python backend/manage.py test pets`
+- [x] Tests pass: `.venv/bin/python backend/manage.py test pets`
 
 **Dependencies:** Task 1
 

@@ -111,3 +111,47 @@ class US1CreateAndListPetsTests(PetApiTestCase):
         res = self.client.post(LIST_URL, pet_payload(name="  Luna ", breed=""), format="json")
         self.assertEqual(res.status_code, 201, res.content)
         self.assertEqual(res.json()["name"], "Luna")
+
+
+class US1EditAndDeletePetsTests(PetApiTestCase):
+    def test_ac3_patch_updates_only_sent_fields(self):
+        pet = self.create_pet(self.owner)
+
+        res = self.client.patch(detail_url(pet.pk), {"weight_kg": "29.10"}, format="json")
+
+        self.assertEqual(res.status_code, 200, res.content)
+        pet.refresh_from_db()
+        self.assertEqual(str(pet.weight_kg), "29.10")
+        self.assertEqual(pet.name, "Milo")
+
+    def test_patch_runs_the_same_validation_as_create(self):
+        pet = self.create_pet(self.owner)
+        res = self.client.patch(detail_url(pet.pk), {"weight_kg": "0"}, format="json")
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("weight_kg", res.json())
+
+    def test_delete_removes_pet(self):
+        pet = self.create_pet(self.owner)
+        keep = self.create_pet(self.owner, name="Luna")
+
+        self.assertEqual(self.client.delete(detail_url(pet.pk)).status_code, 204)
+        self.assertEqual(self.client.get(detail_url(pet.pk)).status_code, 404)
+        self.assertTrue(Pet.objects.filter(pk=keep.pk).exists())
+
+    def test_other_owner_cannot_edit_or_delete_and_vet_is_forbidden(self):
+        pet = self.create_pet(self.owner)
+
+        self.client.force_authenticate(self.other_owner)
+        self.assertEqual(self.client.patch(detail_url(pet.pk), {"name": "Stolen"}, format="json").status_code, 404)
+        self.assertEqual(self.client.delete(detail_url(pet.pk)).status_code, 404)
+
+        self.client.force_authenticate(self.vet)
+        self.assertEqual(self.client.patch(detail_url(pet.pk), {"name": "Vet"}, format="json").status_code, 403)
+        self.assertEqual(self.client.delete(detail_url(pet.pk)).status_code, 403)
+
+        pet.refresh_from_db()
+        self.assertEqual(pet.name, "Milo")
+
+    def test_put_is_not_allowed(self):
+        pet = self.create_pet(self.owner)
+        self.assertEqual(self.client.put(detail_url(pet.pk), pet_payload(), format="json").status_code, 405)

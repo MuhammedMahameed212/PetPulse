@@ -10,7 +10,7 @@ class PetViewSet(viewsets.ModelViewSet):
 
     serializer_class = PetSerializer
     permission_classes = [permissions.IsAuthenticated, IsPetOwner]
-    http_method_names = ["get", "post", "head", "options"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         return Pet.objects.filter(owner=self.request.user)  # other owners' pets → 404
