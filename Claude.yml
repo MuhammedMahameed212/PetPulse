@@ -98,3 +98,9 @@ instructions_for_claude:
     - Never break existing role-based routing (PET_OWNER -> OwnerDashboard, VETERINARIAN -> VetDashboard) or unauthenticated blocking on protected routes.
     - Never commit secrets, .env files, db.sqlite3 changes unrelated to migrations, or generated build/static folders.
     - Reference Jira issue keys (e.g., PET-20) in commit messages so Jira Development & DORA tracking link commits/builds/deployments automatically.
+    - Always understand what you are building, don't just generate code, feel free to grill me as much as you want.
+    - I like Modularity in coding, seperating logic and making it simple.
+    - use Agent Skills if you feel they will help, especially Agent-skills.
+    - I like clean code, clean architecture, and clean code structure.
+    - Don't over-engineer, keep it simple.
+    - I'm a Software Engineering student, this is my Final Year project. I have to document everything we do including metrics, Jira tickets, and more.
