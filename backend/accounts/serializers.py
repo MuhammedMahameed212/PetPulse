@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
+        #no password in fields so password hashes never leave the server.
         fields = [
             "id",
             "username",
@@ -28,6 +29,8 @@ class UserSerializer(serializers.ModelSerializer):
             "clinic_name",
             "dashboard_route",
         ]
+        #role is read only so a logged-in user can't edit their profile to promote themselves from owner to vet.
+
         read_only_fields = ["id", "role", "dashboard_route"]
 
     def get_dashboard_route(self, obj: User) -> str:
@@ -37,16 +40,21 @@ class UserSerializer(serializers.ModelSerializer):
         return "/owner-dashboard"
 
 
+
 class RegisterSerializer(serializers.ModelSerializer):
     """
-    US-15: Validates registration details and creates a new user account.
+    US-15: Validates registration details 
+    and creates a new user account.
     """
 
     password = serializers.CharField(
         write_only=True,
         required=True,
+        #runs Django's built-in password rules: at least 8 character, not all numbers, not similar to username.
         validators=[validate_password],
     )
+
+    #confirm password by typing again.
     password_confirm = serializers.CharField(write_only=True, required=True)
 
     class Meta:
@@ -64,6 +72,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "clinic_name",
         ]
 
+    
     def validate(self, attrs):
         """Checks that both passwords match and that veterinarians gave a license number."""
         if attrs["password"] != attrs["password_confirm"]:
@@ -79,12 +88,25 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         return attrs
 
+
     def create(self, validated_data):
-        """Creates the user with a hashed password (never stored as plain text)."""
+        """
+        Creates the user with a hashed password 
+        (never stored as plain text).
+        """
+        #remove passowrd_confirm, since model has no such column.
         validated_data.pop("password_confirm")
+
+        #remove password and store it aside.
         password = validated_data.pop("password")
+
+        #builds a user object. the ** unpacks the dictionary, so it becomes User(username = "noa", email = "...")
         user = User(**validated_data)
+
+        #hashes the password using Django's built in hash function.
         user.set_password(password)
+
+        #save to database and return the new user
         user.save()
         return user
 
@@ -96,7 +118,10 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    """US-22 (AC3, AC4, AC6): a new password, accepted only with a valid one-time reset link."""
+    """
+    US-22 (AC3, AC4, AC6): a new password,
+    accepted only with a valid one-time reset link.
+    """
 
     uid = serializers.CharField()
     token = serializers.CharField()
@@ -104,8 +129,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        """Accepts the new password only if the reset link is valid and unused, both passwords match,
-        and the password passes Django's strength rules."""
+        """
+        Accepts the new password only if the reset link is valid and unused,
+        both passwords match, and the password passes Django's strength rules.
+        """
         try:
             user = User.objects.get(pk=urlsafe_base64_decode(attrs["uid"]).decode())
         except (ValueError, TypeError, OverflowError, User.DoesNotExist):
@@ -122,7 +149,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return attrs
 
     def save(self, **kwargs):
-        """Saves the new password; this also makes the reset link stop working."""
+        """
+        Saves the new password; 
+        this also makes the reset link stop working.
+        """
         user = self.validated_data["user"]  # type: ignore[index]
         user.set_password(self.validated_data["new_password"])  # type: ignore[index]
         user.save()  # the new password hash also invalidates the reset link

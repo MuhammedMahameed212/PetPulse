@@ -69,12 +69,19 @@ def serve_react_app(request):
     )
 
 
+#a list of urls that Django checks top to bottom, the first match wins.
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health_check, name="api-health"),
     path("api/metrics/", system_metrics, name="api-metrics"),
     path("api/auth/", include("accounts.urls")),
+
+    #using a url variable, Django caputre pet_id and hands it to the medications.
     path("api/pets/<int:pet_id>/medications/", include("medications.urls")),
+
+    #anything starting with api/pets/ -> chop that part off and continue looking in pets/urls.py.
     path("api/pets/", include("pets.urls")),
+
+    
     re_path(r"^(?!api/|admin/|static/|media/).*$", serve_react_app, name="spa-entry"),
 ]

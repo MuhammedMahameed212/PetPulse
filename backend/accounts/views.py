@@ -33,15 +33,20 @@ def get_tokens_for_user(user: User) -> dict[str, str]:
 
 class RegisterView(generics.CreateAPIView):
     """
-    US-15: Create a new account and return JWT tokens + role-based dashboard route.
+    US-15: Create a new account and return JWT tokens +
+    role-based dashboard route.
     """
 
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
+
     def create(self, request, *args, **kwargs):
-        """Creates the account and answers with the user's details and their sign-in tokens."""
+        """
+        Creates the account and answers with the
+        user's details and their sign-in tokens.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -63,8 +68,12 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        """Signs a user in by username or email (any letter case); answers 401 on wrong details,
-        otherwise the user's details and tokens."""
+        """
+        Signs a user in by username or email (any letter case);
+        answers 401 on wrong details,
+        otherwise the user's details and tokens.
+        """
+
         username_or_email = request.data.get("username") or request.data.get("email")
         password = request.data.get("password")
 
@@ -85,6 +94,8 @@ class LoginView(APIView):
                 request, username=user_obj.username, password=password
             )
 
+        #the message is the same whether the account doesn;t exist or the password is wrong.
+        #so an attacker wouldn't know if the username exists in the database.
         if not isinstance(user, User):
             return Response(
                 {"detail": "Invalid login credentials."},
@@ -109,8 +120,12 @@ class CurrentUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        """Returns the signed-in user; the frontend calls it on load to check the saved token."""
+        """
+        Returns the signed-in user;
+        the frontend calls it on load to check the saved token.
+        """
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+
 
 
 class LogoutView(APIView):
@@ -121,7 +136,10 @@ class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        """Ends the server-side session; the frontend also deletes its stored tokens."""
+        """
+        Ends the server-side session;
+        the frontend also deletes its stored tokens.
+        """
         logout(request)
         return Response(
             {"detail": "Logged out successfully."},
@@ -178,12 +196,20 @@ class PasswordResetRequestView(APIView):
     """
 
     permission_classes = [permissions.AllowAny]
+
+    #rate limiting.
+    # in settings "Password_reset" : "5/hour" means at most 5 requests per hour from one IP address.
+    #without it an attacker could make the server send thousand of emails(spams).
+    #The 6th request gets 429 Too Many Requests.
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "password_reset"
 
     def post(self, request):
-        """Emails a reset link to every active account with that email, then gives the same answer
-        whether or not one exists."""
+        """
+        Emails a reset link to every active account with that email, 
+        then gives the same answer
+        whether or not one exists.
+        """
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]  # type: ignore[index]
