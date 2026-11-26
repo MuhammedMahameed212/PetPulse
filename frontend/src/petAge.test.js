@@ -1,7 +1,7 @@
 // Run with: npm test (Node's built-in test runner, no dependencies).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { localToday, petAge, showDate } from "./petAge.js";
+import { localDateTime, localToday, petAge, showDate, showDateTime } from "./petAge.js";
 
 const today = new Date(2026, 10, 17); // 17 Nov 2026, local time
 
@@ -33,4 +33,10 @@ test("approximate dates round to years or months", () => {
 test("local date helpers", () => {
   assert.equal(localToday(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
   assert.equal(showDate("2026-01-05"), "05/01/2026");
+});
+
+test("PET-6: datetime-local value and display use local time", () => {
+  const moment = new Date(2026, 10, 3, 7, 5); // 3 Nov 2026, 07:05 local
+  assert.equal(localDateTime(moment), "2026-11-03T07:05");
+  assert.equal(showDateTime(moment.toISOString()), "03/11/2026 07:05");
 });

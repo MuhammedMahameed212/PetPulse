@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "accounts",
     "pets",
     "medications",
+    "symptoms",
 ]
 
 MIDDLEWARE = [

@@ -57,3 +57,13 @@ export async function apiFetch(endpoint, options = {}) {
 export function errorText(err) {
   return Object.values(err.fields || {}).flat().join(" ") || err.message;
 }
+
+/** Fetches a file with the sign-in token (an <img> or <video> can't send it) and returns it as a Blob. */
+export async function apiBlob(endpoint) {
+  const token = getStoredToken();
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) throw new Error("Couldn't load the file.");
+  return response.blob();
+}

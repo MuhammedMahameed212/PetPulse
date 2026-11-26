@@ -15,8 +15,8 @@ ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 PHOTO_SIZE = (512, 512) #max width, height.
 
 
-def process_photo(upload) -> bytes:
-    """Validate an uploaded image and re-encode it as a small JPEG with no EXIF (no GPS location)."""
+def process_photo(upload, size=PHOTO_SIZE) -> bytes:
+    """Validate an uploaded image and re-encode it as a JPEG no larger than `size`, with no EXIF (no GPS location)."""
     
     #to check what is uploaded is a file (an image is considered a file), if someone sent plaintext we reject.
     if not hasattr(upload, "read"):
@@ -34,7 +34,7 @@ def process_photo(upload) -> bytes:
         if img.width * img.height > MAX_PIXELS:
             raise serializers.ValidationError("Photo is too large. Use one under 40 megapixels.")
         img = ImageOps.exif_transpose(img)  # keep phone photos upright once EXIF is gone
-        img.thumbnail(PHOTO_SIZE)
+        img.thumbnail(size)
 
         #can't story transparent images in JPEG, so if image is one, create a white background and paste the image on top.
         if img.mode in ("RGBA", "LA", "P"):
