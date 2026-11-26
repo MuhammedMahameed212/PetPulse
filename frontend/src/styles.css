@@ -1084,3 +1084,93 @@ select.layer-3-input {
   }
 }
 
+/* PET-6: symptoms (reuses the .med-* cards and form) */
+.sym-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+.sym-filter [aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--sheet);
+}
+.sym-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.sym-badge {
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.sym-mild {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.sym-moderate {
+  background: #f6e7cf;
+  color: var(--soon);
+}
+.sym-severe {
+  background: var(--due-tint);
+  color: var(--due);
+}
+.sym-status {
+  color: var(--ink-2);
+}
+.med-card-main .sym-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sym-notes-input {
+  resize: vertical;
+  min-height: 6rem;
+}
+@media (max-width: 640px) {
+  .med-card-actions {
+    flex-wrap: wrap;
+  }
+}
+.sym-files-label {
+  display: block;
+  margin: 0.4rem 0 0.5rem;
+  font-weight: 600;
+}
+.sym-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.sym-files li {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+.sym-media {
+  display: block;
+  width: 7.5rem;
+  height: 7.5rem;
+  object-fit: cover;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--sheet);
+}
+video.sym-media {
+  width: 12rem;
+  background: var(--ink);
+}
+.sym-media-loading {
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+}
+.sym-file-actions {
+  margin-bottom: 1rem;
+}

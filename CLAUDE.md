@@ -67,6 +67,12 @@ repository_structure:
       views.py: MedicationViewSet nested under a pet via accessible_pets; mark_dose / undo_dose actions
       urls.py: /api/pets/<pet_id>/medications/ (CRUD) + /<id>/doses/ (POST) + /<id>/doses/<dose_id>/ (DELETE)
       tests.py: PET-4 (US-4) medication CRUD, isolation, dose marking/undo tests
+    symptoms/:
+      models.py: SymptomLog (pet FK, occurred_at, description, notes, severity, status, created_by) + SymptomAttachment (photo/video bytes in the DB)
+      media.py: read_attachment — photo via process_photo (1280 px) or video by header (MP4/MOV ftyp, WebM EBML, ≤10 MB)
+      views.py: SymptomViewSet nested under a pet via accessible_pets; ?status= filter; author-only edit/delete; attachments upload/download/delete actions (≤3 files, ≤1 video)
+      urls.py: /api/pets/<pet_id>/symptoms/ (CRUD) + /<id>/attachments/ (POST) + /<id>/attachments/<att_id>/ (GET, DELETE)
+      tests.py: PET-6 (US-6) records, filter, author-only, files, limits, access tests
   frontend/:
     vite.config.js: Dev server on :5173, proxies /api and /media -> 127.0.0.1:8000
     src/App.jsx: Auth state check (/api/auth/me/) + Landing / Auth / Role Dashboard routing
@@ -85,6 +91,9 @@ repository_structure:
       PetProfile.jsx: Pet page (facts, edit, delete dialog, AC6 record entry points, medications panel)
       MedicationsPanel.jsx: Pet's medications list + today's doses (mark / undo)
       MedicationForm.jsx: Add/edit medication form
+      SymptomsPanel.jsx: Pet's symptom history + filter, resolve/reopen, delete, photo/video thumbnails
+      SymptomForm.jsx: Add/edit symptom form with photo/video picker (saves the record, then uploads files one by one)
+      AttachmentView.jsx: Fetches a symptom file with the token and shows it from a blob URL
       VetDashboard.jsx: Veterinarian portal shell
       UserProfileMenu.jsx: Top-right profile dropdown menu
       ChangePasswordCard.jsx: Password update card
@@ -114,8 +123,8 @@ roadmap_milestones:
 
 instructions_for_claude:
   commands:
-    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications --verbosity=1"
-    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications && .venv/bin/coverage report --rcfile=.coveragerc"
+    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications symptoms --verbosity=1"
+    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications symptoms && .venv/bin/coverage report --rcfile=.coveragerc"
     backend_check: ".venv/bin/python backend/manage.py check"
     frontend_tests: "cd frontend && npm test"
     frontend_build: "cd frontend && npm run build"

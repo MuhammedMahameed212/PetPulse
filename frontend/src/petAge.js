@@ -21,3 +21,16 @@ export function localToday(today = new Date()) {
 
 /** "YYYY-MM-DD" → "dd/mm/yyyy". */
 export const showDate = (iso) => iso.split("-").reverse().join("/");
+
+const pad = (n) => String(n).padStart(2, "0");
+
+/** A moment as "YYYY-MM-DDTHH:MM" in the browser's time zone, the value a datetime-local input takes. */
+export function localDateTime(moment = new Date()) {
+  return `${localToday(moment)}T${pad(moment.getHours())}:${pad(moment.getMinutes())}`;
+}
+
+/** An ISO timestamp from the API → "dd/mm/yyyy HH:MM" in the browser's time zone. */
+export function showDateTime(iso) {
+  const moment = new Date(iso);
+  return `${showDate(localToday(moment))} ${pad(moment.getHours())}:${pad(moment.getMinutes())}`;
+}

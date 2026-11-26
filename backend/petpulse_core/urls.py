@@ -78,6 +78,7 @@ urlpatterns = [
 
     #using a url variable, Django caputre pet_id and hands it to the medications.
     path("api/pets/<int:pet_id>/medications/", include("medications.urls")),
+    path("api/pets/<int:pet_id>/symptoms/", include("symptoms.urls")),
 
     #anything starting with api/pets/ -> chop that part off and continue looking in pets/urls.py.
     path("api/pets/", include("pets.urls")),
