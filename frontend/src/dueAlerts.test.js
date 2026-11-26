@@ -7,7 +7,7 @@ const rabies = reminderAlert({ id: 7, pet: 3, pet_name: "Milo", kind: "VACCINATI
 const flea = reminderAlert({ id: 8, pet: 4, pet_name: "Luna", kind: "TREATMENT", title: "Flea drops" });
 
 test("a reminder becomes an alert with a stable key", () => {
-  assert.deepEqual(rabies, { key: "reminder:7", pet: 3, title: "Rabies booster", body: "Milo · Vaccination" });
+  assert.deepEqual(rabies, { key: "reminder:7", kind: "reminder", pet: 3, title: "Rabies booster", body: "Milo · Vaccination" });
 });
 
 test("only alerts not announced before are new", () => {
@@ -38,6 +38,7 @@ test("a due dose becomes an alert keyed by medicine, day and time", () => {
   const dose = { medication: 4, pet: 3, pet_name: "Milo", name: "Carprofen", dosage: "1 tablet", date: "2026-11-26", time: "08:00" };
   assert.deepEqual(doseAlert(dose), {
     key: "dose:4:2026-11-26:08:00",
+    kind: "dose",
     pet: 3,
     title: "Carprofen at 08:00",
     body: "Milo · 1 tablet",

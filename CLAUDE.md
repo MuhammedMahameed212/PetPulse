@@ -103,7 +103,11 @@ repository_structure:
     src/api.js: Fetch wrapper & JWT token storage helpers (sends FormData as multipart)
     src/petAge.js: Pet age + local-date helpers (localToday, showDate) from YYYY-MM-DD strings (no UTC shift); tested in petAge.test.js
     src/reminders.js: Reminder type/repeat labels, defaultDueAt, the petpulse:due-changed event; tested in reminders.test.js
-    src/dueAlerts.js: Pure alert helpers (reminder/dose alert keys, what's new, notification text); tested in dueAlerts.test.js
+    src/dueAlerts.js: Pure alert helpers (reminder/dose alert keys + kind, what's new, notification text); tested in dueAlerts.test.js
+    src/dashboard.js: Owner dashboard rules (greeting, relativeDay, petStatus, nextUp); tested in dashboard.test.js
+    src/fx3d.js: Pure 3D helpers (tiltAt for pet-card tilt, petTag maps a pet to its CollarTag3D); tested in fx3d.test.js
+    src/useTilt.js: Hook that tilts a pet card toward the mouse (mouse only, off with reduced motion)
+    src/useOpenReminders.js: Hook loading all open reminders for the Today strip and pet cards (refreshes on petpulse:due-changed)
     src/useDueAlerts.js: Hook that polls due reminders + doses every 60 s, feeds the bell, shows browser notifications once
     src/styles.css: Design tokens + auth/dashboard styles (landing-only styles in components/landing.css)
     src/components/:
@@ -113,9 +117,10 @@ repository_structure:
       ForgotPasswordForm.jsx: Request a password-reset link
       ResetPasswordPage.jsx: Set a new password from a reset link
       OwnerDashboard.jsx: Pet Owner portal (My pets list / add / pet page / edit, Reminders tab, Account settings) + reminder bell
-      PetList.jsx: Pet cards, empty state, PetAvatar, SPECIES labels
+      PetList.jsx: Pet cards (species band, status line: overdue / next reminder), empty state, PetAvatar, SPECIES labels
+      TodaySummary.jsx: Dashboard Today strip (doses due, overdue reminders, next up)
       PetForm.jsx: Shared add/edit pet form with photo picker
-      PetProfile.jsx: Pet page (facts, edit, delete dialog, medications, symptoms and reminders panels)
+      PetProfile.jsx: Pet page (species hero with one fact line and the pet's lazy 3D collar tag, jump links, edit, delete dialog, medications/symptoms/reminders section cards)
       MedicationsPanel.jsx: Pet's medications list + today's doses (mark / undo)
       MedicationForm.jsx: Add/edit medication form
       SymptomsPanel.jsx: Pet's symptom history + filter, resolve/reopen, delete, photo/video thumbnails
@@ -145,6 +150,7 @@ completed_work:
       - PET-4 (US-4): Medications and daily dose tracking. Docs in docs/PET-4-medications/
       - PET-6 (US-6): Symptom log with photos/video, filter, author-only edit. Docs in docs/PET-6-symptoms/
       - PET-5 (US-5): Reminders (4 types, repeat, mark done from the due day, medicine link), all-pets tab, bell + browser notifications incl. due medicine doses (US-4 AC3). Docs in docs/PET-5-reminders/
+  - Owner dashboard + pet page refresh (Today strip, richer pet cards, pet hero, jump links, press/hover motion). Docs in docs/UI-owner-redesign/
   - Each user story's spec.md, plan.md and todo.md live in docs/PET-<n>-<slug>/
 
 roadmap_milestones:

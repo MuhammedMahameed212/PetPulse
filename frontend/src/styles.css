@@ -15,6 +15,8 @@
   --soon: #a86406;
   --due: #c2352a;
   --due-tint: #f6d9d5;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out for UI feedback */
+  --shadow-lift: 0 10px 24px -14px rgba(19, 42, 37, 0.45);
   --display: "Fraunces", Georgia, serif;
   --body: "Instrument Sans", system-ui, sans-serif;
 }
@@ -548,6 +550,10 @@ label {
   border-radius: 999px;
   font: 600 1rem/1 var(--body);
   cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+}
+.btn-line:active {
+  transform: scale(0.97);
 }
 .btn-line:hover {
   background: var(--ink);
@@ -586,22 +592,23 @@ label {
   gap: 0.75rem;
 }
 .pet-card {
+  position: relative;
+  overflow: hidden;
   width: 100%;
+  height: 100%;
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.9rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 1.6rem 1.1rem 1.1rem;
   background: var(--sheet);
   color: var(--ink);
   border: 1px solid var(--rule);
-  border-radius: 16px;
+  border-radius: 18px;
   text-align: left;
   font: inherit;
   cursor: pointer;
-  transition: border-color 0.15s;
-}
-.pet-card:hover {
-  border-color: var(--ink-2);
+  transition: transform 160ms var(--ease-out), box-shadow 200ms ease, border-color 200ms ease;
 }
 .pet-card-text {
   display: flex;
@@ -699,13 +706,6 @@ select.layer-3-input {
   color: var(--due);
 }
 
-.pet-profile-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
-}
 .pet-profile-title {
   flex: 1;
   min-width: 12rem;
@@ -725,47 +725,10 @@ select.layer-3-input {
   padding: 0.65rem 1.1rem;
   font-size: 0.95rem;
 }
-.pet-facts {
-  grid-template-columns: repeat(3, 1fr);
-  margin: 0;
-}
-.pet-facts dd {
-  margin: 0;
-  font-weight: 600;
-}
 
 .pet-records-title {
   margin: 2.25rem 0 0.9rem;
   font-size: 1.4rem;
-}
-.pet-records {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-.pet-records li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 1rem 1.1rem;
-  border: 1.5px dashed var(--rule);
-  border-radius: 14px;
-  color: var(--ink-2);
-  font-size: 0.95rem;
-}
-.pet-records strong {
-  font: 560 1.15rem/1.2 var(--display);
-  font-variation-settings: "SOFT" 100;
-  color: var(--ink);
-}
-.pet-records small {
-  margin-top: 0.35rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ink-2);
 }
 
 .pet-dialog {
@@ -875,8 +838,7 @@ select.layer-3-input {
   .layer-3-card {
     padding: 1.25rem;
   }
-  .user-info-grid,
-  .pet-records {
+  .user-info-grid {
     grid-template-columns: 1fr;
   }
 
@@ -932,6 +894,9 @@ select.layer-3-input {
 }
 .med-head .pet-records-title {
   margin: 0;
+}
+.med-head .btn-line {
+  white-space: nowrap;
 }
 .med-empty {
   margin: 0;
@@ -1228,4 +1193,393 @@ video.sym-media {
 }
 .sym-file-actions {
   margin-bottom: 1rem;
+}
+
+/* ---------- Owner dashboard + pet page refresh (docs/UI-owner-redesign) ---------- */
+/* Species tones: one hue per species, used for the card band, the hero and the avatar. */
+.pet-tone-dog { --species: var(--cobalt); }
+.pet-tone-cat { --species: #b4325c; }
+.pet-tone-bird { --species: var(--soon); }
+.pet-tone-rabbit { --species: var(--ok); }
+.pet-tone-other { --species: var(--ink-2); }
+
+/* Pet cards: species band behind a cut-out avatar, and one status line */
+.pet-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+.pet-card-band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3.4rem;
+  background: color-mix(in srgb, var(--species, var(--ink-2)) 18%, var(--sheet));
+}
+.pet-card .pet-avatar {
+  position: relative; /* above the band */
+  border: 3px solid var(--sheet);
+}
+.pet-card-text {
+  gap: 0.15rem;
+}
+.pet-card-text strong {
+  font-size: 1.4rem;
+}
+.pet-status {
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.pet-status-due {
+  color: var(--due);
+}
+.pet-status-quiet {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* Today strip */
+.today-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.6fr;
+  gap: 0.75rem;
+  margin: 0.25rem 0 1.75rem;
+}
+.today-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  min-height: 6.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--sheet);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  font: inherit;
+  text-align: left;
+  transition: transform 160ms var(--ease-out), box-shadow 200ms ease;
+}
+button.today-tile {
+  cursor: pointer;
+}
+.today-value {
+  font: 560 2.1rem/1 var(--display);
+  font-variation-settings: "SOFT" 100;
+}
+.today-label {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.today-alert {
+  background: var(--due-tint);
+  border-color: transparent;
+}
+.today-alert .today-value {
+  color: var(--due);
+}
+.today-alert .today-label {
+  color: #7d241c;
+}
+.today-clear .today-value {
+  font-size: 1.35rem;
+  color: var(--ok);
+}
+.today-next {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.today-next .today-label {
+  color: var(--on-ink-2);
+}
+.today-title {
+  font: 560 1.3rem/1.2 var(--display);
+  font-variation-settings: "SOFT" 100;
+  overflow-wrap: anywhere;
+}
+
+/* Press and hover feedback for the big tappable things. Hover lift only with a real pointer. */
+.pet-card:active,
+button.today-tile:active,
+.pet-jump a:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pet-card:hover,
+  button.today-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+  .pet-card:hover {
+    border-color: var(--ink-2);
+  }
+  .pet-card:hover:active,
+  button.today-tile:hover:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Pet page: hero, jump links, sections as cards */
+.pet-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  padding: 1.4rem;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--species, var(--ink-2)) 14%, var(--sheet));
+}
+.pet-hero .pet-avatar {
+  border: 4px solid #fff;
+}
+.pet-hero .btn-line:not(:hover) {
+  background: #fff; /* stay readable on the tinted panel */
+}
+.pet-hero .welcome-heading {
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+}
+.pet-hero-facts {
+  margin: 0.4rem 0 0;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.pet-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pet-jump a {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms ease, transform 160ms var(--ease-out);
+}
+.pet-jump a:hover {
+  background: var(--paper-2);
+}
+.pet-profile .med-section {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.4rem 1.4rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+}
+.pet-profile .med-section .med-card {
+  background: #fff;
+}
+.pet-profile .pet-records-title {
+  scroll-margin-top: 1.5rem;
+}
+.pet-coming {
+  margin: 1.5rem 0 0;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+@media (max-width: 640px) {
+  .today-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+  .today-next {
+    grid-column: 1 / -1;
+  }
+  .pet-hero {
+    padding: 1.1rem;
+  }
+  .pet-profile .med-section {
+    padding: 1rem;
+  }
+}
+
+/* ---------- 3D (docs/UI-owner-redesign, V1.2) ---------- */
+/* Pet hero: details on the left, the pet's own collar tag on the right */
+.pet-hero {
+  gap: 0.5rem 1.25rem;
+  padding: 1.25rem 1.4rem;
+}
+.pet-hero-main {
+  flex: 1 1 22rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.pet-hero .pet-profile-actions {
+  margin-top: 0.9rem;
+}
+.pet-hero-tag {
+  flex: 0 1 300px;
+  min-width: 220px;
+}
+.pet-hero-tag .pp-tag-canvas {
+  height: 190px;
+  border-radius: 16px;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.7), transparent);
+}
+.pet-hero-tag .pp-tag-canvas:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+}
+.pet-hero-hint {
+  margin: 0.1rem 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+/* Pet cards tilt in 3D (useTilt.js writes the transform); a soft light follows the pointer */
+.pet-card {
+  transform-style: preserve-3d;
+}
+.pet-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.55), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .pet-card:hover::before {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .pet-hero-main {
+    flex-basis: 100%;
+  }
+  .pet-hero-tag {
+    flex-basis: 100%;
+  }
+  .pet-hero-tag .pp-tag-canvas {
+    height: 170px;
+  }
+}
+
+/* ---------- Motion (docs/UI-owner-redesign, Task 5) ----------
+   Only transform + opacity move. Entrances run once per mount (opening a view), never on every re-render.
+   Stagger: each item sets --i; the delay is capped so a long pet list never waits. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes settle-in {
+  from { opacity: 0; transform: scale(0.92); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.6); }
+}
+@keyframes ring-out {
+  from { opacity: 0.55; transform: scale(1); }
+  to { opacity: 0; transform: scale(2.6); }
+}
+@keyframes target-flash {
+  0%, 40% { opacity: 1; } /* hold long enough to be seen after the scroll, then fade */
+  100% { opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* A view (pets list, pet page, form, reminders, settings) arriving */
+.adaptive-main-content > .layer-3-card {
+  animation: rise-in 240ms var(--ease-out) backwards;
+}
+
+/* Today strip, then pet cards, one after another */
+.today-tile,
+.pet-grid > li {
+  animation: rise-in 280ms var(--ease-out) backwards;
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms + 60ms);
+}
+
+/* Pet page: avatar settles, then the rest follows */
+.pet-hero .pet-avatar {
+  animation: settle-in 320ms var(--ease-out) 60ms backwards;
+}
+.pet-profile > .pet-jump,
+.pet-profile > .med-section {
+  animation: rise-in 280ms var(--ease-out) backwards;
+}
+.pet-profile > .pet-jump { animation-delay: 80ms; }
+.pet-profile > .med-section:nth-of-type(1) { animation-delay: 120ms; }
+.pet-profile > .med-section:nth-of-type(2) { animation-delay: 160ms; }
+.pet-profile > .med-section:nth-of-type(3) { animation-delay: 200ms; }
+
+/* Overdue dot: two soft rings after the card lands, then still */
+.pet-status-due > span[aria-hidden] {
+  position: relative;
+  display: inline-block;
+}
+.pet-status-due > span[aria-hidden]::after {
+  content: "";
+  position: absolute;
+  inset: 0.2em;
+  border-radius: 50%;
+  background: var(--due);
+  opacity: 0;
+  animation: ring-out 900ms var(--ease-out) 600ms 2;
+}
+
+/* Bell count: pops when the number changes (the span is keyed by the count) */
+.rem-bell-count {
+  animation: pop-in 220ms var(--ease-out) backwards;
+}
+
+/* A jump link's section: a cobalt ring that fades, so you see where you landed */
+.pet-profile .med-section {
+  position: relative;
+}
+.pet-profile .med-section::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--cobalt);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+.pet-profile .med-section:has(.pet-records-title:target)::after {
+  animation: target-flash 1600ms ease 250ms backwards;
+}
+
+/* Hover: the avatar leans in a touch (real pointers only) */
+.pet-card .pet-avatar {
+  transition: transform 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pet-card:hover .pet-avatar {
+    transform: scale(1.05);
+  }
+}
+
+/* Reduced motion: keep a gentle fade where content arrives, drop the movement, rings and pops. */
+@media (prefers-reduced-motion: reduce) {
+  .adaptive-main-content > .layer-3-card,
+  .today-tile,
+  .pet-grid > li,
+  .pet-profile > .pet-jump,
+  .pet-profile > .med-section,
+  .pet-hero .pet-avatar {
+    animation-name: fade-in !important;
+    animation-duration: 200ms !important;
+  }
+  .pet-status-due > span[aria-hidden]::after,
+  .rem-bell-count {
+    animation: none !important;
+  }
 }

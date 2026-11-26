@@ -10,7 +10,7 @@ export default function ReminderBell({ count, onOpen }) {
           fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
         <path d="M9.5 19.5a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       </svg>
-      {count > 0 && <span className="rem-bell-count" aria-hidden="true">{count > 9 ? "9+" : count}</span>}
+      {count > 0 && <span key={count} className="rem-bell-count" aria-hidden="true">{count > 9 ? "9+" : count}</span>}
     </button>
   );
 }

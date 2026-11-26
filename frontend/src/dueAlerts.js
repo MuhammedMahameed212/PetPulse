@@ -7,6 +7,7 @@ const MAX_REMEMBERED = 200;
 /** A due reminder as an alert: a stable key (so it's announced once), the pet, and its text. */
 export const reminderAlert = (r) => ({
   key: `reminder:${r.id}`,
+  kind: "reminder",
   pet: r.pet,
   title: r.title,
   body: `${r.pet_name} · ${KINDS[r.kind]}`,
@@ -15,6 +16,7 @@ export const reminderAlert = (r) => ({
 /** A due medicine dose (US-4 AC3) as an alert; the key includes the day, so each day's dose is new. */
 export const doseAlert = (d) => ({
   key: `dose:${d.medication}:${d.date}:${d.time}`,
+  kind: "dose",
   pet: d.pet,
   title: `${d.name} at ${d.time}`,
   body: `${d.pet_name} · ${d.dosage}`,

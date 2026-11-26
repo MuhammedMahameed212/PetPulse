@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../api";
+import { greeting } from "../dashboard";
 import ChangePasswordCard from "./ChangePasswordCard";
 import PetForm from "./PetForm";
 import PetList from "./PetList";
 import PetProfile from "./PetProfile";
 import ReminderBell from "./ReminderBell";
 import RemindersOverview from "./RemindersOverview";
+import TodaySummary from "./TodaySummary";
 import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
 import useDueAlerts from "../useDueAlerts";
+import useOpenReminders from "../useOpenReminders";
 
 export default function OwnerDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("pets"); // "pets" | "reminders" | "settings"
@@ -17,6 +20,8 @@ export default function OwnerDashboard({ user, onLogout }) {
   const [pets, setPets] = useState(null); // null while loading
   const [loadError, setLoadError] = useState("");
   const dueAlerts = useDueAlerts(); // PET-5 (AC3): bell count + browser notifications
+  const openReminders = useOpenReminders(dueAlerts.alerts.length); // Today strip + pet cards
+  const doseCount = dueAlerts.alerts.filter((a) => a.kind === "dose").length;
 
   useEffect(() => {
     apiFetch("/pets/")
@@ -115,8 +120,8 @@ export default function OwnerDashboard({ user, onLogout }) {
             <div className="layer-3-card">
               <div className="section-head">
                 <div>
-                  <h2 className="welcome-heading">Hi, {user.first_name || user.username}.</h2>
-                  <p className="welcome-body">Your pets, and everything about their health, in one place.</p>
+                  <h2 className="welcome-heading">{greeting(new Date().getHours())}, {user.first_name || user.username}.</h2>
+                  <p className="welcome-body">Here’s what your pets need today.</p>
                 </div>
                 {pets?.length > 0 && (
                   <button type="button" className="btn-3d btn-inline" onClick={() => setView("add")}>
@@ -126,7 +131,11 @@ export default function OwnerDashboard({ user, onLogout }) {
               </div>
               {loadError && <div className="error-alert" role="alert">Couldn't load your pets: {loadError}</div>}
               {pets === null && !loadError && <p className="welcome-body">Loading your pets…</p>}
-              {pets && <PetList pets={pets} onAdd={() => setView("add")} onOpen={openPet} />}
+              {pets?.length > 0 && (
+                <TodaySummary doseCount={doseCount} reminders={openReminders}
+                  onOpenReminders={() => openTab("reminders")} onOpenPet={openPet} />
+              )}
+              {pets && <PetList pets={pets} reminders={openReminders} onAdd={() => setView("add")} onOpen={openPet} />}
             </div>
           )}
 
