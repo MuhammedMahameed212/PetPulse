@@ -229,7 +229,9 @@ class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        """Checks the link and the new password, then saves it."""
+        """
+        Checks the link and the new password, then saves it.
+        """
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
