@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../api";
+import { greeting } from "../dashboard";
 import ChangePasswordCard from "./ChangePasswordCard";
 import PetForm from "./PetForm";
 import PetList from "./PetList";
 import PetProfile from "./PetProfile";
+import ReminderBell from "./ReminderBell";
+import RemindersOverview from "./RemindersOverview";
+import TodaySummary from "./TodaySummary";
 import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
+import useDueAlerts from "../useDueAlerts";
+import useOpenReminders from "../useOpenReminders";
 
 export default function OwnerDashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState("pets"); // "pets" | "settings"
+  const [activeTab, setActiveTab] = useState("pets"); // "pets" | "reminders" | "settings"
   const [view, setView] = useState("list"); // "list" | "add" | "pet" | "edit"
   const [petId, setPetId] = useState(null);
   const [pets, setPets] = useState(null); // null while loading
   const [loadError, setLoadError] = useState("");
+  const dueAlerts = useDueAlerts(); // PET-5 (AC3): bell count + browser notifications
+  const openReminders = useOpenReminders(dueAlerts.alerts.length); // Today strip + pet cards
+  const doseCount = dueAlerts.alerts.filter((a) => a.kind === "dose").length;
 
   useEffect(() => {
     apiFetch("/pets/")
@@ -28,6 +37,7 @@ export default function OwnerDashboard({ user, onLogout }) {
   const currentPet = pets?.find((p) => p.id === petId);
 
   function openPet(id) {
+    setActiveTab("pets");
     setPetId(id);
     setView("pet");
   }
@@ -63,6 +73,13 @@ export default function OwnerDashboard({ user, onLogout }) {
             </button>
             <button
               type="button"
+              className={`side-nav-item ${activeTab === "reminders" ? "active" : ""}`}
+              onClick={() => openTab("reminders")}
+            >
+              Reminders
+            </button>
+            <button
+              type="button"
               className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => openTab("settings")}
             >
@@ -78,6 +95,7 @@ export default function OwnerDashboard({ user, onLogout }) {
         {/* Main Content Area containing Top-Right Profile Dropdown + LAYER 3 Active Tab Card */}
         <section className="adaptive-main-content">
           <div className="workspace-topbar">
+            <ReminderBell count={dueAlerts.alerts.length} onOpen={() => openTab("reminders")} />
             <UserProfileMenu user={user} onLogout={onLogout} />
           </div>
 
@@ -102,8 +120,8 @@ export default function OwnerDashboard({ user, onLogout }) {
             <div className="layer-3-card">
               <div className="section-head">
                 <div>
-                  <h2 className="welcome-heading">Hi, {user.first_name || user.username}.</h2>
-                  <p className="welcome-body">Your pets, and everything about their health, in one place.</p>
+                  <h2 className="welcome-heading">{greeting(new Date().getHours())}, {user.first_name || user.username}.</h2>
+                  <p className="welcome-body">Here’s what your pets need today.</p>
                 </div>
                 {pets?.length > 0 && (
                   <button type="button" className="btn-3d btn-inline" onClick={() => setView("add")}>
@@ -113,9 +131,15 @@ export default function OwnerDashboard({ user, onLogout }) {
               </div>
               {loadError && <div className="error-alert" role="alert">Couldn't load your pets: {loadError}</div>}
               {pets === null && !loadError && <p className="welcome-body">Loading your pets…</p>}
-              {pets && <PetList pets={pets} onAdd={() => setView("add")} onOpen={openPet} />}
+              {pets?.length > 0 && (
+                <TodaySummary doseCount={doseCount} reminders={openReminders}
+                  onOpenReminders={() => openTab("reminders")} onOpenPet={openPet} />
+              )}
+              {pets && <PetList pets={pets} reminders={openReminders} onAdd={() => setView("add")} onOpen={openPet} />}
             </div>
           )}
+
+          {activeTab === "reminders" && <RemindersOverview onOpenPet={openPet} notifications={dueAlerts} />}
 
           {activeTab === "settings" && (
             <>
@@ -155,6 +179,13 @@ export default function OwnerDashboard({ user, onLogout }) {
             onClick={() => openTab("pets")}
           >
             <span>My pets</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "reminders" ? "active" : ""}`}
+            onClick={() => openTab("reminders")}
+          >
+            <span>Reminders</span>
           </button>
           <button
             type="button"

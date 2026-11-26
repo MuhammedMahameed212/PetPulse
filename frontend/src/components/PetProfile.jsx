@@ -1,18 +1,31 @@
-import React, { useRef, useState } from "react";
+import React, { Suspense, lazy, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../api";
+import { petTag } from "../fx3d";
 import { petAge, showDate } from "../petAge";
 import MedicationsPanel from "./MedicationsPanel";
+import RemindersPanel from "./RemindersPanel";
 import SymptomsPanel from "./SymptomsPanel";
 import { PetAvatar, SPECIES } from "./PetList";
 
-// AC6: the profile is the entry point to these records; each arrives in its own user story.
-const RECORDS = [
-  ["Medical file", "Visits, diagnoses and lab results."],
-  ["Treatments", "Flea, tick and worm treatments on a schedule."],
-  ["Documents", "Reports and certificates from the clinic."],
-];
+// The landing page's three.js collar tag, loaded only when a pet page opens; without WebGL it renders nothing.
+const CollarTag3D = lazy(() => import("./CollarTag3D").catch(() => ({ default: () => null })));
+
+// PET-1 AC6: the profile is the entry point to these records; each arrives in its own user story.
+const RECORDS = ["the medical file", "treatments", "documents"];
+
+/** The hero's one fact line: "Labrador · 4 yrs · 28.4 kg · born 02/03/2022" ("about" for an estimated birth). */
+function facts(pet) {
+  return [
+    pet.breed || SPECIES[pet.species],
+    petAge(pet.birth_date, pet.birth_date_is_estimate),
+    `${Number(pet.weight_kg)}\u00a0kg`, // keep the number and unit together
+    `born ${pet.birth_date_is_estimate ? "about " : ""}${showDate(pet.birth_date)}`,
+  ];
+}
 
 export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
+  // Rebuilt only when what's engraved changes; a new object every render would make the tag spin.
+  const tag = useMemo(() => petTag(pet), [pet.id, pet.name, pet.species]);
   const dialogRef = useRef(null);
   const cancelRef = useRef(null);
   const [deleting, setDeleting] = useState(false);
@@ -42,53 +55,41 @@ export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
         Back to my pets
       </button>
 
-      <header className="pet-profile-head">
-        <PetAvatar pet={pet} size="lg" />
-        <div className="pet-profile-title">
-          <h2 className="welcome-heading">{pet.name}</h2>
-          <p>{[SPECIES[pet.species], pet.breed].filter(Boolean).join(", ")}</p>
+      <header className={`pet-hero pet-tone-${pet.species.toLowerCase()}`}>
+        <div className="pet-hero-main">
+          <PetAvatar pet={pet} size="lg" />
+          <div className="pet-profile-title">
+            <h2 className="welcome-heading">{pet.name}</h2>
+            <p className="pet-hero-facts">{facts(pet).join(" · ")}</p>
+            <div className="form-actions pet-profile-actions">
+              <button type="button" className="btn-line btn-small" onClick={onEdit}>
+                Edit
+              </button>
+              <button type="button" className="btn-line btn-line-danger btn-small" onClick={askToDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="form-actions pet-profile-actions">
-          <button type="button" className="btn-line" onClick={onEdit}>
-            Edit
-          </button>
-          <button type="button" className="btn-line btn-line-danger" onClick={askToDelete}>
-            Delete
-          </button>
+        <div className="pet-hero-tag">
+          <Suspense fallback={<div className="pp-tag-canvas" />}>
+            <CollarTag3D pet={tag} />
+          </Suspense>
+          <p className="pet-hero-hint">Drag to flip {pet.name}’s tag</p>
         </div>
       </header>
 
-      <dl className="user-info-grid pet-facts">
-        <div className="info-pill">
-          <dt className="info-label">Age</dt>
-          <dd>{petAge(pet.birth_date, pet.birth_date_is_estimate)}</dd>
-        </div>
-        <div className="info-pill">
-          <dt className="info-label">Birth date</dt>
-          <dd>
-            {showDate(pet.birth_date)}
-            {pet.birth_date_is_estimate && " (approximate)"}
-          </dd>
-        </div>
-        <div className="info-pill">
-          <dt className="info-label">Weight</dt>
-          <dd>{Number(pet.weight_kg)} kg</dd>
-        </div>
-      </dl>
+      <nav className="pet-jump" aria-label={`${pet.name}’s records`}>
+        <a href="#meds-title">Medications</a>
+        <a href="#symptoms-title">Symptoms</a>
+        <a href="#reminders-title">Reminders</a>
+      </nav>
 
       <MedicationsPanel pet={pet} />
       <SymptomsPanel pet={pet} />
+      <RemindersPanel pet={pet} />
 
-      <h3 className="pet-records-title">{pet.name}’s other records</h3>
-      <ul className="pet-records">
-        {RECORDS.map(([title, body]) => (
-          <li key={title}>
-            <strong>{title}</strong>
-            <span>{body}</span>
-            <small>Coming in a later release</small>
-          </li>
-        ))}
-      </ul>
+      <p className="pet-coming">Coming soon: {RECORDS.join(", ")}.</p>
 
       <dialog ref={dialogRef} className="pet-dialog" aria-labelledby="delete-title" onClose={() => setError("")}>
         <h3 id="delete-title">Delete {pet.name}?</h3>

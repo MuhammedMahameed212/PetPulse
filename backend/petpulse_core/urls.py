@@ -7,6 +7,9 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import include, path, re_path
 from django.utils import timezone
 
+from medications.views import DueDosesView
+from reminders.views import AllRemindersView
+
 
 def health_check(request):
     """Simple endpoint to verify Django backend is running and reachable from React."""
@@ -79,6 +82,9 @@ urlpatterns = [
     #using a url variable, Django caputre pet_id and hands it to the medications.
     path("api/pets/<int:pet_id>/medications/", include("medications.urls")),
     path("api/pets/<int:pet_id>/symptoms/", include("symptoms.urls")),
+    path("api/pets/<int:pet_id>/reminders/", include("reminders.urls")),
+    path("api/reminders/", AllRemindersView.as_view(), name="all-reminders"),
+    path("api/medications/due-doses/", DueDosesView.as_view(), name="due-doses"),
 
     #anything starting with api/pets/ -> chop that part off and continue looking in pets/urls.py.
     path("api/pets/", include("pets.urls")),

@@ -5,10 +5,12 @@ from django.utils import timezone
 from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from pets.access import accessible_pets
 from pets.permissions import IsPetOwner
 
+from .due import due_doses
 from .models import DoseLog
 from .serializers import DoseSerializer, MedicationSerializer
 
@@ -65,3 +67,14 @@ class MedicationViewSet(viewsets.ModelViewSet):
             raise exceptions.ValidationError("Only today's doses can be undone.")
         dose.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DueDosesView(APIView):
+    """PET-5 (US-4 AC3): today's doses that are due and not given, across all the caller's pets
+    (/api/medications/due-doses/). Read-only; the reminder bell polls it."""
+
+    permission_classes = [permissions.IsAuthenticated, IsPetOwner]
+
+    def get(self, request):
+        """The due doses, soonest first."""
+        return Response(due_doses(request.user))

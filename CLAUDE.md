@@ -9,6 +9,22 @@ project:
     medications, symptom logs, reminders, multi-owner/caregiver sharing,
     a dedicated Veterinarian Portal, AI medical document extraction (OCR),
     and a nearby clinics & dog parks map.
+  live_url: https://petpulse-web.onrender.com
+  requirements_doc: >
+    "docs/פרוייקט גמר.docx" (Hebrew) is the source of truth for the course: background, market research
+    (11Pets, VitusVet, PetDesk), user groups, US-1..US-23 with acceptance criteria, FR01–FR22, NFR01–NFR07,
+    architecture and the 7 development milestones. Read the story's US and FR there before writing its spec.
+  story_to_requirement: >
+    PET-<n> = US-<n>. FR per story: US-1 FR02, US-2 FR03, US-3 FR04, US-4 FR05, US-5 FR06, US-6 FR07,
+    US-7 FR08, US-8 FR09, US-9 FR10, US-10 FR11, US-11 FR12, US-12 FR13, US-13 FR14, US-14 FR15,
+    US-15 FR01, US-16 FR16, US-17 FR21, US-18 FR17, US-19 FR18, US-20 FR19, US-21 FR20, US-22 FR22, US-23 FR01.
+  non_functional: >
+    NFR01 security (auth required, permission checked on every read/write, revoked access stops at once),
+    NFR02 performance (loading indicator for slow work like AI/PDF; external failures never hang the app),
+    NFR03 usability (clear labels, field-level errors, success/error messages), NFR04 reliability (no partial saves;
+    a failing map/AI service doesn't break the rest), NFR05 responsive (owner UI mobile-first, vet portal desktop),
+    NFR06 maintainability (modular, swappable external services, documented), NFR07 accessibility (contrast,
+    errors not by colour alone, comfortable touch targets).
   jira:
     site: https://petpulse.atlassian.net
     project_key: PET
@@ -44,7 +60,7 @@ repository_structure:
     manage.py: Django CLI entry point
     petpulse_core/:
       settings.py: Core settings, JWT, CORS, WhiteNoise, DATABASE_URL, FRONTEND_DIST_DIR
-      urls.py: /admin/, /api/health/, /api/metrics/, /api/auth/, and SPA catch-all
+      urls.py: /admin/, /api/health/, /api/metrics/, /api/auth/, nested pet apps, /api/reminders/, /api/medications/due-doses/, and SPA catch-all
       tests.py: Health, metrics, and SPA root route tests
     accounts/:
       models.py: Custom User model with roles (PET_OWNER, VETERINARIAN) & clinic/license fields
@@ -64,20 +80,35 @@ repository_structure:
     medications/:
       models.py: Medication (pet FK, name, dosage, frequency, dose_times, start/end date, notes) + DoseLog (one given dose per scheduled slot)
       serializers.py: MedicationSerializer + DoseSerializer validation
-      views.py: MedicationViewSet nested under a pet via accessible_pets; mark_dose / undo_dose actions
+      views.py: MedicationViewSet nested under a pet via accessible_pets; mark_dose / undo_dose actions; DueDosesView (/api/medications/due-doses/)
+      due.py: due_doses(user, now) — today's daily doses whose time passed and aren't given, read live from the schedule (PET-5, US-4 AC3)
       urls.py: /api/pets/<pet_id>/medications/ (CRUD) + /<id>/doses/ (POST) + /<id>/doses/<dose_id>/ (DELETE)
-      tests.py: PET-4 (US-4) medication CRUD, isolation, dose marking/undo tests
+      tests.py: PET-4 (US-4) medication CRUD, isolation, dose marking/undo tests + PET-5 due-dose tests
     symptoms/:
       models.py: SymptomLog (pet FK, occurred_at, description, notes, severity, status, created_by) + SymptomAttachment (photo/video bytes in the DB)
       media.py: read_attachment — photo via process_photo (1280 px) or video by header (MP4/MOV ftyp, WebM EBML, ≤10 MB)
       views.py: SymptomViewSet nested under a pet via accessible_pets; ?status= filter; author-only edit/delete; attachments upload/download/delete actions (≤3 files, ≤1 video)
       urls.py: /api/pets/<pet_id>/symptoms/ (CRUD) + /<id>/attachments/ (POST) + /<id>/attachments/<att_id>/ (GET, DELETE)
       tests.py: PET-6 (US-6) records, filter, author-only, files, limits, access tests
+    reminders/:
+      models.py: Reminder (pet FK, kind MEDICATION/VACCINATION/TREATMENT/VET_VISIT, title, due_at, repeat NONE/WEEKLY/MONTHLY/YEARLY, optional medication FK, notes, done_at/done_by); can_be_marked_done (from its due day), mark_done (creates the next repeat)
+      recurrence.py: next_due(due_at, repeat) — pure date step in local wall-clock time, month-end clamp
+      serializers.py: ReminderSerializer (medication limited to the URL's pet; done reminders locked; is_due, can_mark_done, medication_name)
+      views.py: ReminderViewSet nested under a pet (?status=open|done; done/ action with a row lock) + AllRemindersView (/api/reminders/, ?due=1)
+      urls.py: /api/pets/<pet_id>/reminders/ (CRUD) + /<id>/done/ (POST)
+      tests.py: PET-5 (US-5) CRUD, validation, ordering, done + repeat, due-day rule, medicine link, all-pets list, access tests
   frontend/:
     vite.config.js: Dev server on :5173, proxies /api and /media -> 127.0.0.1:8000
     src/App.jsx: Auth state check (/api/auth/me/) + Landing / Auth / Role Dashboard routing
     src/api.js: Fetch wrapper & JWT token storage helpers (sends FormData as multipart)
     src/petAge.js: Pet age + local-date helpers (localToday, showDate) from YYYY-MM-DD strings (no UTC shift); tested in petAge.test.js
+    src/reminders.js: Reminder type/repeat labels, defaultDueAt, the petpulse:due-changed event; tested in reminders.test.js
+    src/dueAlerts.js: Pure alert helpers (reminder/dose alert keys + kind, what's new, notification text); tested in dueAlerts.test.js
+    src/dashboard.js: Owner dashboard rules (greeting, relativeDay, petStatus, nextUp); tested in dashboard.test.js
+    src/fx3d.js: Pure 3D helpers (tiltAt for pet-card tilt, petTag maps a pet to its CollarTag3D); tested in fx3d.test.js
+    src/useTilt.js: Hook that tilts a pet card toward the mouse (mouse only, off with reduced motion)
+    src/useOpenReminders.js: Hook loading all open reminders for the Today strip and pet cards (refreshes on petpulse:due-changed)
+    src/useDueAlerts.js: Hook that polls due reminders + doses every 60 s, feeds the bell, shows browser notifications once
     src/styles.css: Design tokens + auth/dashboard styles (landing-only styles in components/landing.css)
     src/components/:
       ThreeLayerShell.jsx: Page frame for auth + dashboards (centred sheet); also exports the PulseMark logo
@@ -85,15 +116,20 @@ repository_structure:
       AuthPage.jsx: Sign-in & role-based registration form (Pet Owner vs Veterinarian)
       ForgotPasswordForm.jsx: Request a password-reset link
       ResetPasswordPage.jsx: Set a new password from a reset link
-      OwnerDashboard.jsx: Pet Owner portal (My pets list / add / pet page / edit, Account settings)
-      PetList.jsx: Pet cards, empty state, PetAvatar, SPECIES labels
+      OwnerDashboard.jsx: Pet Owner portal (My pets list / add / pet page / edit, Reminders tab, Account settings) + reminder bell
+      PetList.jsx: Pet cards (species band, status line: overdue / next reminder), empty state, PetAvatar, SPECIES labels
+      TodaySummary.jsx: Dashboard Today strip (doses due, overdue reminders, next up)
       PetForm.jsx: Shared add/edit pet form with photo picker
-      PetProfile.jsx: Pet page (facts, edit, delete dialog, AC6 record entry points, medications panel)
+      PetProfile.jsx: Pet page (species hero with one fact line and the pet's lazy 3D collar tag, jump links, edit, delete dialog, medications/symptoms/reminders section cards)
       MedicationsPanel.jsx: Pet's medications list + today's doses (mark / undo)
       MedicationForm.jsx: Add/edit medication form
       SymptomsPanel.jsx: Pet's symptom history + filter, resolve/reopen, delete, photo/video thumbnails
       SymptomForm.jsx: Add/edit symptom form with photo/video picker (saves the record, then uploads files one by one)
       AttachmentView.jsx: Fetches a symptom file with the token and shows it from a blob URL
+      RemindersPanel.jsx: Pet's reminders (Upcoming / Done), mark done, edit, delete dialog
+      ReminderForm.jsx: Add/edit reminder form (type, title, date+time, repeat, linked medicine for Medication)
+      RemindersOverview.jsx: All-pets Reminders tab (Doses due / Overdue / Upcoming, enable notifications)
+      ReminderBell.jsx: Top-bar bell with the due count
       VetDashboard.jsx: Veterinarian portal shell
       UserProfileMenu.jsx: Top-right profile dropdown menu
       ChangePasswordCard.jsx: Password update card
@@ -112,19 +148,22 @@ completed_work:
   - Milestone 2:
       - PET-1 (US-1): Pet profiles (create, list, edit, delete, photo). Docs in docs/PET-1-pet-profiles/
       - PET-4 (US-4): Medications and daily dose tracking. Docs in docs/PET-4-medications/
+      - PET-6 (US-6): Symptom log with photos/video, filter, author-only edit. Docs in docs/PET-6-symptoms/
+      - PET-5 (US-5): Reminders (4 types, repeat, mark done from the due day, medicine link), all-pets tab, bell + browser notifications incl. due medicine doses (US-4 AC3). Docs in docs/PET-5-reminders/
+  - Owner dashboard + pet page refresh (Today strip, richer pet cards, pet hero, jump links, press/hover motion). Docs in docs/UI-owner-redesign/
   - Each user story's spec.md, plan.md and todo.md live in docs/PET-<n>-<slug>/
 
 roadmap_milestones:
   - PET-24 (Milestone 1): Registration & Account Management (PET-15, PET-23, PET-22 done; next -> PET-20 US-20 profile update)
-  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1, PET-4 done; PET-17, 12, 2, 19, 3, 18, 6, 5)
+  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1, PET-4, PET-6, PET-5 done; PET-17, 12, 2, 19, 3, 18)
   - PET-26 (Milestone 3): Sharing Pet Info, Access Control & Summary Export (PET-21, 16, 9)
   - PET-27 (Milestone 4): Veterinarian Collaboration & Consultations (PET-10, 11, 14)
   - PET-28 (Milestone 5): Medical Documents, AI OCR & Nearby Clinics/Parks Map (PET-7, 8, 13)
 
 instructions_for_claude:
   commands:
-    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications symptoms --verbosity=1"
-    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications symptoms && .venv/bin/coverage report --rcfile=.coveragerc"
+    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications symptoms reminders --verbosity=1"
+    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications symptoms reminders && .venv/bin/coverage report --rcfile=.coveragerc"
     backend_check: ".venv/bin/python backend/manage.py check"
     frontend_tests: "cd frontend && npm test"
     frontend_build: "cd frontend && npm run build"
