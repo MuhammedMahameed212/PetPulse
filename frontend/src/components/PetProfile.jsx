@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { apiFetch } from "../api";
 import { petAge, showDate } from "../petAge";
 import MedicationsPanel from "./MedicationsPanel";
+import RemindersPanel from "./RemindersPanel";
 import SymptomsPanel from "./SymptomsPanel";
 import { PetAvatar, SPECIES } from "./PetList";
 
@@ -78,6 +79,7 @@ export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
 
       <MedicationsPanel pet={pet} />
       <SymptomsPanel pet={pet} />
+      <RemindersPanel pet={pet} />
 
       <h3 className="pet-records-title">{pet.name}’s other records</h3>
       <ul className="pet-records">

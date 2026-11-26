@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.utils import timezone
@@ -8,6 +9,7 @@ from accounts.models import User
 from pets.models import Pet
 from pets.tests import make_user
 
+from .due import due_doses
 from .models import DoseLog, Medication
 
 
@@ -256,3 +258,71 @@ class US4DoseTrackingTests(MedicationApiTestCase):
         res = self.client.patch(detail_url(self.pet.pk, prn.pk), {"frequency": "DAILY", "dose_times": ["08:00"]}, format="json")
         self.assertEqual(res.status_code, 200, res.content)
         self.assertEqual([s["time"] for s in self.today_slots(prn)], ["08:00"])
+
+
+NOON = timezone.make_aware(datetime(2026, 11, 26, 12, 0))  # a fixed "now", in Asia/Jerusalem
+DUE_DOSES_URL = "/api/medications/due-doses/"
+
+
+class US4DueDoseRemindersTests(MedicationApiTestCase):
+    """PET-5 (US-4 AC3): today's daily doses whose time has come and that nobody marked as given."""
+
+    def setUp(self):
+        super().setUp()
+        self.today = NOON.date()
+
+    def daily(self, pet=None, **fields):
+        data = {"dose_times": ["08:00", "11:59", "12:00", "20:00"], "start_date": "2026-11-01", "end_date": None, **fields}
+        return self.make_med(pet or self.pet, **data)
+
+    def due(self):
+        return [(d["name"], d["time"]) for d in due_doses(self.owner, NOON)]
+
+    def test_lists_passed_doses_not_given_yet(self):
+        self.daily()
+        self.assertEqual(self.due(), [("Carprofen", "08:00"), ("Carprofen", "11:59"), ("Carprofen", "12:00")])
+
+    def test_a_given_dose_is_not_due(self):
+        med = self.daily()
+        DoseLog.objects.create(medication=med, scheduled_date=self.today, scheduled_time=time(8, 0), given_by=self.owner)
+        self.assertEqual(self.due(), [("Carprofen", "11:59"), ("Carprofen", "12:00")])
+
+    def test_yesterdays_given_dose_does_not_count_for_today(self):
+        med = self.daily(dose_times=["08:00"])
+        DoseLog.objects.create(
+            medication=med, scheduled_date=self.today - timedelta(days=1), scheduled_time=time(8, 0), given_by=self.owner
+        )
+        self.assertEqual(self.due(), [("Carprofen", "08:00")])
+
+    def test_ended_not_started_and_as_needed_medicines_are_not_due(self):
+        self.daily(name="Ended", end_date="2026-11-25")
+        self.daily(name="Later", start_date="2026-11-27")
+        self.daily(name="Spray", frequency="AS_NEEDED", dose_times=[])
+        self.daily(name="Last day", dose_times=["08:00"], end_date="2026-11-26")
+        self.assertEqual(self.due(), [("Last day", "08:00")])
+
+    def test_only_the_callers_pets(self):
+        luna = self.make_pet(self.owner, "Luna")
+        self.daily(luna, name="Luna's", dose_times=["09:00"])
+        self.daily(self.make_pet(self.other_owner, "Bella"), name="Not mine", dose_times=["09:00"])
+        doses = due_doses(self.owner, NOON)
+        self.assertEqual([(d["name"], d["pet_name"]) for d in doses], [("Luna's", "Luna")])
+        self.assertEqual(doses[0]["pet"], luna.pk)
+        self.assertEqual(doses[0]["date"], "2026-11-26")
+
+    def test_endpoint_returns_due_doses_soonest_first(self):
+        luna = self.make_pet(self.owner, "Luna")
+        self.daily(name="B", dose_times=["10:00"])
+        self.daily(luna, name="A", dose_times=["07:30"])
+        with patch("django.utils.timezone.now", return_value=NOON):
+            res = self.client.get(DUE_DOSES_URL)
+
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual([(d["name"], d["time"]) for d in res.json()], [("A", "07:30"), ("B", "10:00")])
+        self.assertEqual(set(res.json()[0]), {"medication", "pet", "pet_name", "name", "dosage", "date", "time"})
+
+    def test_endpoint_vet_403_and_signed_out_401(self):
+        self.client.force_authenticate(self.vet)
+        self.assertEqual(self.client.get(DUE_DOSES_URL).status_code, 403)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(DUE_DOSES_URL).status_code, 401)

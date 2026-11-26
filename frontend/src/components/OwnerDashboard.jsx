@@ -4,15 +4,19 @@ import ChangePasswordCard from "./ChangePasswordCard";
 import PetForm from "./PetForm";
 import PetList from "./PetList";
 import PetProfile from "./PetProfile";
+import ReminderBell from "./ReminderBell";
+import RemindersOverview from "./RemindersOverview";
 import ThreeLayerShell, { PulseMark } from "./ThreeLayerShell";
 import UserProfileMenu from "./UserProfileMenu";
+import useDueAlerts from "../useDueAlerts";
 
 export default function OwnerDashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState("pets"); // "pets" | "settings"
+  const [activeTab, setActiveTab] = useState("pets"); // "pets" | "reminders" | "settings"
   const [view, setView] = useState("list"); // "list" | "add" | "pet" | "edit"
   const [petId, setPetId] = useState(null);
   const [pets, setPets] = useState(null); // null while loading
   const [loadError, setLoadError] = useState("");
+  const dueAlerts = useDueAlerts(); // PET-5 (AC3): bell count + browser notifications
 
   useEffect(() => {
     apiFetch("/pets/")
@@ -28,6 +32,7 @@ export default function OwnerDashboard({ user, onLogout }) {
   const currentPet = pets?.find((p) => p.id === petId);
 
   function openPet(id) {
+    setActiveTab("pets");
     setPetId(id);
     setView("pet");
   }
@@ -63,6 +68,13 @@ export default function OwnerDashboard({ user, onLogout }) {
             </button>
             <button
               type="button"
+              className={`side-nav-item ${activeTab === "reminders" ? "active" : ""}`}
+              onClick={() => openTab("reminders")}
+            >
+              Reminders
+            </button>
+            <button
+              type="button"
               className={`side-nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => openTab("settings")}
             >
@@ -78,6 +90,7 @@ export default function OwnerDashboard({ user, onLogout }) {
         {/* Main Content Area containing Top-Right Profile Dropdown + LAYER 3 Active Tab Card */}
         <section className="adaptive-main-content">
           <div className="workspace-topbar">
+            <ReminderBell count={dueAlerts.alerts.length} onOpen={() => openTab("reminders")} />
             <UserProfileMenu user={user} onLogout={onLogout} />
           </div>
 
@@ -117,6 +130,8 @@ export default function OwnerDashboard({ user, onLogout }) {
             </div>
           )}
 
+          {activeTab === "reminders" && <RemindersOverview onOpenPet={openPet} notifications={dueAlerts} />}
+
           {activeTab === "settings" && (
             <>
               <div className="layer-3-card">
@@ -155,6 +170,13 @@ export default function OwnerDashboard({ user, onLogout }) {
             onClick={() => openTab("pets")}
           >
             <span>My pets</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-item ${activeTab === "reminders" ? "active" : ""}`}
+            onClick={() => openTab("reminders")}
+          >
+            <span>Reminders</span>
           </button>
           <button
             type="button"

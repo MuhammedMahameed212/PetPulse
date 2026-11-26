@@ -43,3 +43,6 @@ yarn-error.log*
 *.swo
 
 Claude.yml
+
+# Course documents (kept locally, not in the repo)
+docs/*.docx

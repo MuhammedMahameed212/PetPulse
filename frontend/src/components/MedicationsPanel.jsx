@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { apiFetch, errorText } from "../api";
 import { showDate } from "../petAge";
+import { announceDueChanged } from "../reminders";
 import MedicationForm from "./MedicationForm";
 
 function schedule(med) {
@@ -45,6 +46,7 @@ export default function MedicationsPanel({ pet }) {
     setBusy(true);
     try {
       await apiFetch(`${listUrl}${path}`, options);
+      announceDueChanged(); // PET-5: a given dose leaves the bell at once
     } catch (err) {
       setDoseError(errorText(err));
     }

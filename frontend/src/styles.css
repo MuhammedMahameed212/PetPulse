@@ -411,6 +411,8 @@ label {
 .workspace-topbar {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.6rem;
   position: relative;
   z-index: 40;
 }
@@ -1117,6 +1119,59 @@ select.layer-3-input {
 .sym-severe {
   background: var(--due-tint);
   color: var(--due);
+}
+/* PET-5: reminders (reuses the .med-* cards and .sym-* filter and badges) */
+.rem-kind {
+  background: var(--cobalt-tint);
+  color: var(--cobalt-ink);
+}
+.rem-due {
+  border-left: 4px solid var(--due);
+}
+.rem-row {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.rem-row:hover {
+  border-color: var(--ink);
+}
+.rem-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: var(--sheet);
+  color: var(--ink);
+  border: 1.5px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.rem-bell:hover {
+  border-color: var(--ink);
+}
+.rem-bell-count {
+  position: absolute;
+  top: -0.3rem;
+  right: -0.3rem;
+  min-width: 1.3rem;
+  padding: 0.05rem 0.3rem;
+  background: var(--due);
+  color: #fff;
+  border-radius: 999px;
+  font: 700 0.75rem/1.2 var(--body);
+}
+.rem-notice {
+  margin: 0 0 0.75rem;
+  color: var(--ok);
+  font-weight: 600;
+}
+.rem-notice:empty {
+  margin: 0; /* stays in the page so screen readers announce it when it fills */
 }
 .sym-status {
   color: var(--ink-2);
