@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { apiFetch, errorText } from "../api";
 import { showDate } from "../petAge";
 import MedicationForm from "./MedicationForm";
+import RecordSection from "./RecordSection";
 
 function schedule(med) {
   return med.frequency === "DAILY" ? `daily at ${med.dose_times.join(", ")}` : "as needed";
@@ -91,15 +92,17 @@ export default function MedicationsPanel({ pet }) {
   }
 
   return (
-    <section className="med-section" aria-labelledby="meds-title">
-      <div className="med-head">
-        <h3 id="meds-title" className="pet-records-title">Medications</h3>
-        {!editing && (
+    <RecordSection
+      id="meds"
+      title="Medications"
+      action={
+        !editing && (
           <button type="button" className="btn-line btn-small" onClick={() => setEditing("new")}>
             Add medication
           </button>
-        )}
-      </div>
+        )
+      }
+    >
 
       {loadError && <div className="error-alert" role="alert">{loadError}</div>}
 
@@ -190,6 +193,6 @@ export default function MedicationsPanel({ pet }) {
           </button>
         </div>
       </dialog>
-    </section>
+    </RecordSection>
   );
 }
