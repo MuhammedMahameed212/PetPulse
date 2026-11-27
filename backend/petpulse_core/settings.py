@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "medications",
     "symptoms",
     "care",
+    "medical_file",
 ]
 
 MIDDLEWARE = [

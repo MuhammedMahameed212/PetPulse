@@ -79,10 +79,15 @@ repository_structure:
       views.py: CareViewSet nested under a pet via accessible_pets; ?category= filter; author-only edit/delete
       urls.py: /api/pets/<pet_id>/care/ (CRUD)
       tests.py: PET-3 (US-3) records, validation, due status, filter, author-only, access tests
+    medical_file/:
+      timeline.py: build_timeline(pet) — one event per care record (GIVEN), medication (STARTED, ENDED once past) and symptom (NOTED, local time); newest first. One function per source
+      views.py: MedicalFileView, GET /api/pets/<pet_id>/medical-file/ (read-only, via accessible_pets)
+      tests.py: PET-2 (US-2) sources, order, history, access tests
   frontend/:
     vite.config.js: Dev server on :5173, proxies /api and /media -> 127.0.0.1:8000
     src/App.jsx: Auth state check (/api/auth/me/) + Landing / Auth / Role Dashboard routing
     src/api.js: Fetch wrapper & JWT token storage helpers (sends FormData as multipart)
+    src/medicalFile.js: Medical file month grouping (groupByMonth, monthLabel); tested in medicalFile.test.js
     src/careNames.js: Vaccine/treatment name suggestions per species and category; tested in careNames.test.js
     src/petAge.js: Pet age + local-date helpers (localToday, showDate) from YYYY-MM-DD strings (no UTC shift); tested in petAge.test.js
     src/styles.css: Design tokens + auth/dashboard styles (landing-only styles in components/landing.css)
@@ -96,12 +101,13 @@ repository_structure:
       PetList.jsx: Pet cards, empty state, PetAvatar, SPECIES labels
       PetForm.jsx: Shared add/edit pet form with photo picker
       PetProfile.jsx: Pet page (facts, edit, delete dialog, care, medications and symptoms panels, placeholders for later records)
-      RecordSection.jsx: Pet-page section that opens/closes from its title (arrow; closed at first); wraps Care, Medications and Symptoms panels
+      RecordSection.jsx: Pet-page section that opens/closes from its title (arrow; closed at first), or from a #<id>-section link; onOpen callback; wraps every pet-page panel
       MedicationsPanel.jsx: Pet's medications list + today's doses (mark / undo)
       MedicationForm.jsx: Add/edit medication form
       SymptomsPanel.jsx: Pet's symptom history + filter, resolve/reopen, delete, photo/video thumbnails
       SymptomForm.jsx: Add/edit symptom form with photo/video picker (saves the record, then uploads files one by one)
       AttachmentView.jsx: Fetches a symptom file with the token and shows it from a blob URL
+      MedicalFilePanel.jsx: Pet's medical file: one timeline by month, type filter, events link to their section
       CarePanel.jsx: Pet's vaccinations & treatments: coming up (due status, record next dose) + history with category filter
       CareForm.jsx: Add/edit vaccination or treatment form (name suggestions from careNames.js)
       VetDashboard.jsx: Veterinarian portal shell
@@ -124,19 +130,20 @@ completed_work:
       - PET-4 (US-4): Medications and daily dose tracking. Docs in docs/PET-4-medications/
       - PET-6 (US-6): Symptom log with photos/video (vet access waits for PET-21). Docs in docs/PET-6-symptoms/
       - PET-3 (US-3): Vaccinations and periodic treatments with due status (reminders in PET-5, vet access in PET-21). Docs in docs/PET-3-vaccinations-treatments/
+      - PET-2 (US-2): Medical file timeline over care, medications and symptoms (vet visits, documents and vet access in later stories). Docs in docs/PET-2-medical-file/
   - Each user story's spec.md, plan.md and todo.md live in docs/PET-<n>-<slug>/
 
 roadmap_milestones:
   - PET-24 (Milestone 1): Registration & Account Management (PET-15, PET-23, PET-22 done; next -> PET-20 US-20 profile update)
-  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1, PET-4, PET-6, PET-3 done; PET-17, 12, 2, 19, 18, 5)
+  - PET-25 (Milestone 2): Pet Profile & Full Medical Management (PET-1, PET-4, PET-6, PET-3, PET-2 done; PET-17, 12, 19, 18, 5)
   - PET-26 (Milestone 3): Sharing Pet Info, Access Control & Summary Export (PET-21, 16, 9)
   - PET-27 (Milestone 4): Veterinarian Collaboration & Consultations (PET-10, 11, 14)
   - PET-28 (Milestone 5): Medical Documents, AI OCR & Nearby Clinics/Parks Map (PET-7, 8, 13)
 
 instructions_for_claude:
   commands:
-    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications symptoms care --verbosity=1"
-    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications symptoms care && .venv/bin/coverage report --rcfile=.coveragerc"
+    backend_tests: ".venv/bin/python backend/manage.py test petpulse_core accounts pets medications symptoms care medical_file --verbosity=1"
+    backend_coverage: ".venv/bin/coverage run --rcfile=.coveragerc backend/manage.py test petpulse_core accounts pets medications symptoms care medical_file && .venv/bin/coverage report --rcfile=.coveragerc"
     backend_check: ".venv/bin/python backend/manage.py check"
     frontend_tests: "cd frontend && npm test"
     frontend_build: "cd frontend && npm run build"

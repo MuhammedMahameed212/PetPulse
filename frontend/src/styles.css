@@ -1229,3 +1229,73 @@ video.sym-media {
     transition: none;
   }
 }
+
+/* PET-2: medical file timeline (reuses the .sym-* filter and badges) */
+.file-month + .file-month {
+  margin-top: 1rem;
+}
+.file-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.file-event {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+.file-event:hover {
+  border-color: var(--ink-2);
+}
+.file-event:focus-visible {
+  outline: 3px solid var(--cobalt);
+  outline-offset: 2px;
+}
+.file-date {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  padding-top: 0.15rem;
+}
+.file-main {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.file-main strong {
+  font: 600 1.05rem var(--display);
+  overflow-wrap: anywhere;
+}
+.file-main small {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+.file-vaccine {
+  background: var(--cobalt-tint);
+  color: var(--cobalt-ink);
+}
+.file-treatment {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.file-medication {
+  background: #f6e7cf;
+  color: var(--soon);
+}
+.file-symptom {
+  background: var(--due-tint);
+  color: var(--due);
+}
+@media (max-width: 640px) {
+  .file-event {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+}
