@@ -1087,6 +1087,7 @@ select.layer-3-input {
 /* PET-6: symptoms (reuses the .med-* cards and form) */
 .sym-filter {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.9rem;
 }
@@ -1173,4 +1174,58 @@ video.sym-media {
 }
 .sym-file-actions {
   margin-bottom: 1rem;
+}
+
+/* PET-3: vaccinations & treatments (reuses the .med-* cards and the .sym-* badges and filter) */
+.care-subtitle {
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--ink-2);
+}
+.care-overdue {
+  background: var(--due-tint);
+  color: var(--due);
+}
+.care-soon {
+  background: #f6e7cf;
+  color: var(--soon);
+}
+.care-ok {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+/* Pet page sections that open and close from their title (RecordSection) */
+.section-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.section-toggle:focus-visible {
+  outline: 3px solid var(--cobalt);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.section-chevron {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg); /* points right while closed */
+  transition: transform 0.2s ease;
+}
+.section-toggle[aria-expanded="true"] .section-chevron {
+  transform: rotate(45deg); /* points down while open */
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-chevron {
+    transition: none;
+  }
 }

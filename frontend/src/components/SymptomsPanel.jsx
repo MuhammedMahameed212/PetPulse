@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { apiFetch, errorText } from "../api";
 import { showDateTime } from "../petAge";
 import AttachmentView from "./AttachmentView";
+import RecordSection from "./RecordSection";
 import SymptomForm, { SEVERITY } from "./SymptomForm";
 
 const FILTERS = [
@@ -72,15 +73,17 @@ export default function SymptomsPanel({ pet }) {
     : `No symptoms recorded yet. Note anything unusual so you can show ${pet.name}’s vet how it developed.`;
 
   return (
-    <section className="med-section" aria-labelledby="symptoms-title">
-      <div className="med-head">
-        <h3 id="symptoms-title" className="pet-records-title">Symptoms</h3>
-        {!editing && (
+    <RecordSection
+      id="symptoms"
+      title="Symptoms"
+      action={
+        !editing && (
           <button type="button" className="btn-line btn-small" onClick={() => setEditing("new")}>
             Add symptom
           </button>
-        )}
-      </div>
+        )
+      }
+    >
 
       {error && <div className="error-alert" role="alert">{error}</div>}
 
@@ -177,6 +180,6 @@ export default function SymptomsPanel({ pet }) {
           </button>
         </div>
       </dialog>
-    </section>
+    </RecordSection>
   );
 }

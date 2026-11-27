@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "pets",
     "medications",
     "symptoms",
+    "care",
 ]
 
 MIDDLEWARE = [
