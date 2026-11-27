@@ -2,13 +2,14 @@ import React, { useRef, useState } from "react";
 import { apiFetch } from "../api";
 import { petAge, showDate } from "../petAge";
 import CarePanel from "./CarePanel";
+import MedicalFilePanel from "./MedicalFilePanel";
 import MedicationsPanel from "./MedicationsPanel";
 import SymptomsPanel from "./SymptomsPanel";
 import { PetAvatar, SPECIES } from "./PetList";
 
 // AC6: the profile is the entry point to these records; each arrives in its own user story.
 const RECORDS = [
-  ["Medical file", "Visits, diagnoses and lab results."],
+  ["Vet visits", "Visits, diagnoses and lab results."],
   ["Documents", "Reports and certificates from the clinic."],
 ];
 
@@ -76,6 +77,7 @@ export default function PetProfile({ pet, onBack, onEdit, onDeleted }) {
         </div>
       </dl>
 
+      <MedicalFilePanel pet={pet} />
       <CarePanel pet={pet} />
       <MedicationsPanel pet={pet} />
       <SymptomsPanel pet={pet} />

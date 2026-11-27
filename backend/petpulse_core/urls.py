@@ -80,6 +80,7 @@ urlpatterns = [
     path("api/pets/<int:pet_id>/medications/", include("medications.urls")),
     path("api/pets/<int:pet_id>/symptoms/", include("symptoms.urls")),
     path("api/pets/<int:pet_id>/care/", include("care.urls")),
+    path("api/pets/<int:pet_id>/medical-file/", include("medical_file.urls")),
 
     #anything starting with api/pets/ -> chop that part off and continue looking in pets/urls.py.
     path("api/pets/", include("pets.urls")),
